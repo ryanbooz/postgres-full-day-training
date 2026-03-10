@@ -1,6 +1,5 @@
 autoscale: true
 
-[.background-color: #336791]
 [.footer: Slide 1 / 63]
 
 ## Postgres Query Tuning
@@ -11,12 +10,9 @@ autoscale: true
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 2 / 63]
 
 ## Hour 6 Topics
-
-[.column]
 
 - Understanding EXPLAIN
 - Reading query plans
@@ -25,24 +21,15 @@ autoscale: true
 - Index types and strategies
 - Common performance patterns
 
-[.column]
-
-**Training Materials**
-
-**github.com/Snowflake-Labs/postgres-full-day-training**
-
-![inline 50%](diagrams/qr-code.png)
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 3 / 63]
 
 ## EXPLAIN - The Essential Tool
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 4 / 63]
 
 ## What is EXPLAIN?
@@ -64,7 +51,6 @@ Output:
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 5 / 63]
 
 ## EXPLAIN Options
@@ -86,7 +72,6 @@ SELECT * FROM bluebox.film WHERE vote_average > 8;
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 6 / 63]
 
 ## EXPLAIN Output Formats
@@ -107,7 +92,6 @@ EXPLAIN (FORMAT XML) SELECT * FROM bluebox.film LIMIT 5;
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 7 / 63]
 
 ## EXPLAIN YAML Example
@@ -138,7 +122,6 @@ SELECT title, vote_average FROM bluebox.film WHERE vote_average > 8;
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 8 / 63]
 
 ## Reading Plan Costs
@@ -156,7 +139,6 @@ Seq Scan on film  (cost=0.00..941.95 rows=110 width=777)
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 9 / 63]
 
 ## EXPLAIN ANALYZE
@@ -179,7 +161,6 @@ Estimated 110 rows, got 111 — pretty close!
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 10 / 63]
 
 ## Warning About EXPLAIN ANALYZE
@@ -198,7 +179,6 @@ ROLLBACK;
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 11 / 63]
 
 ## EXPLAIN with BUFFERS
@@ -222,7 +202,6 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 12 / 63]
 
 [.column]
@@ -235,7 +214,6 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 13 / 63]
 
 [.column]
@@ -254,7 +232,6 @@ Reads every row in the table
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 14 / 63]
 
 [.column]
@@ -272,7 +249,6 @@ Uses index to find rows, then fetches from table
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 15 / 63]
 
 [.column]
@@ -290,7 +266,6 @@ All needed data is in the index - no table access!
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 16 / 63]
 
 [.column]
@@ -308,7 +283,6 @@ Two-phase: Build bitmap of matching rows, then fetch in physical order
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 17 / 63]
 
 ## Join Operations - Nested Loop
@@ -332,7 +306,6 @@ Best for small result sets with good indexes!
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 18 / 63]
 
 ## Sort Operations
@@ -341,7 +314,6 @@ Best for small result sets with good indexes!
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 19 / 63]
 
 ## Sort Methods in EXPLAIN
@@ -364,23 +336,21 @@ External merge = data exceeded work_mem
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 20 / 63]
 
 ## pg\_stat\_statements
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 21 / 63]
 
 ## Finding Slow Queries
 
-pg\_stat\_statements collects query statistics
+pg\_stat\_statements collects cumulative query statistics
 
 ```sql
 -- Add to shared_preload_libraries
-ALTER SYSTEM SET shared_preload_libraries = 'pg\_stat\_statements';
+ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
 ```
 
 ```bash
@@ -396,7 +366,6 @@ CREATE EXTENSION pg_stat_statements;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 22 / 63]
 
 ## Generate Some Query Activity
@@ -424,7 +393,6 @@ SELECT title FROM bluebox.film ORDER BY popularity DESC LIMIT 20;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 23 / 63]
 
 ## Top Queries by Total Time
@@ -444,7 +412,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 24 / 63]
 
 ## Top Queries by Average Time
@@ -463,7 +430,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 25 / 63]
 
 ## Queries with Most I/O
@@ -483,7 +449,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 26 / 63]
 
 ## Reset Statistics
@@ -498,7 +463,6 @@ SELECT pg_stat_statements_reset();
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 27 / 63]
 
 ## auto_explain: Automatic Query Plans
@@ -507,7 +471,6 @@ Logs EXPLAIN output for slow queries automatically - no manual EXPLAIN needed!
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 28 / 63]
 
 ## Setup: Make Sure Logging is Running
@@ -528,7 +491,6 @@ tail -f logs/postgresql.log
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 29 / 63]
 
 ## Enable auto_explain
@@ -548,7 +510,6 @@ These are session-level settings - no restart needed!
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 30 / 63]
 
 ## Run a Slow Query
@@ -567,7 +528,6 @@ Watch your log tail window!
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 31 / 63]
 
 ## See the Plan in the Log
@@ -586,7 +546,6 @@ Sort  (cost=1234.56..1234.78 rows=100 width=40)
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 32 / 63]
 
 ## auto_explain Options
@@ -602,14 +561,12 @@ For production, add to `shared_preload_libraries` and use `ALTER SYSTEM`.
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 33 / 63]
 
 ![inline](diagrams/postgres-index-types.png)
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 34 / 63]
 
 ## B-Tree Index (Default)
@@ -626,7 +583,6 @@ SELECT title FROM bluebox.film WHERE vote_average > 8;
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 35 / 63]
 
 ## B-Tree Index: After
@@ -646,7 +602,6 @@ Cost dropped from ~942 to ~8!
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 36 / 63]
 
 ## GIN Index
@@ -664,7 +619,6 @@ WHERE to_tsvector('english', overview) @@ to_tsquery('hero');
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 37 / 63]
 
 ## GIN Index: After
@@ -685,7 +639,6 @@ Full-text search becomes instant!
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 38 / 63]
 
 ## GiST Index
@@ -704,7 +657,6 @@ WHERE ST_DWithin(geog,
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 39 / 63]
 
 ## GiST Index: After
@@ -725,7 +677,6 @@ Spatial queries go from scanning all rows to using the index!
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 40 / 63]
 
 ## Index Type Summary
@@ -740,14 +691,12 @@ Spatial queries go from scanning all rows to using the index!
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 41 / 63]
 
 ## Index Strategies
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 42 / 63]
 
 ## Composite Indexes
@@ -766,7 +715,6 @@ WHERE lower(rental_period) > '2024'                     ✗
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 43 / 63]
 
 ## Covering Indexes (INCLUDE)
@@ -785,7 +733,6 @@ WHERE vote_average > 8;
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 44 / 63]
 
 ## Partial Indexes
@@ -805,7 +752,6 @@ WHERE upper(rental_period) IS NULL
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 45 / 63]
 
 ## Expression Indexes
@@ -826,7 +772,6 @@ WHERE (amount * 1.0825) > 10.00;
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 46 / 63]
 
 ## When NOT to Index
@@ -840,7 +785,6 @@ Every index has maintenance cost!
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 47 / 63]
 
 ## Finding Missing Indexes
@@ -859,7 +803,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 48 / 63]
 
 ## HypoPG - Test Indexes Without Creating
@@ -874,7 +817,6 @@ No disk space, no write overhead - just planning.
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 49 / 63]
 
 ## HypoPG Example: Before Index
@@ -893,7 +835,6 @@ Sequential scan - reads entire table.
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 50 / 63]
 
 ## HypoPG Example: Create Hypothetical Index
@@ -913,7 +854,6 @@ SELECT * FROM hypopg_create_index(
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 51 / 63]
 
 ## HypoPG Example: Test With Hypothetical Index
@@ -933,7 +873,6 @@ Cost dropped from 941 to 8 - index would help!
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 52 / 63]
 
 ## HypoPG Example: Composite Index
@@ -952,7 +891,6 @@ WHERE customer_id = 100
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 53 / 63]
 
 ## HypoPG: Cleanup and Compare
@@ -972,14 +910,12 @@ Great for testing index strategies before committing disk space!
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 54 / 63]
 
 ## Common Performance Patterns
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 55 / 63]
 
 ## Pattern: N+1 Queries
@@ -1003,7 +939,6 @@ LEFT JOIN rental r ON c.customer_id = r.customer_id;
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 56 / 63]
 
 ## Pattern: SELECT *
@@ -1026,7 +961,6 @@ WHERE vote_average > 8;
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 57 / 63]
 
 ## Pattern: OFFSET for Pagination
@@ -1052,7 +986,6 @@ LIMIT 20;
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 58 / 63]
 
 ## Pattern: Functions on Indexed Columns
@@ -1076,7 +1009,6 @@ WHERE payment_date >= '2024-01-15'
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 59 / 63]
 
 ## Pattern: OR Conditions
@@ -1100,7 +1032,6 @@ SELECT * FROM bluebox.film WHERE EXTRACT(year FROM release_date) = 2024;
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 60 / 63]
 
 ## Query Tuning Checklist
@@ -1115,14 +1046,13 @@ SELECT * FROM bluebox.film WHERE EXTRACT(year FROM release_date) = 2024;
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 61 / 63]
 
 ## Hour 6 Summary
 
 - ✅ EXPLAIN for understanding query plans
 - ✅ Reading costs, rows, and actual times
-- ✅ pg_stat_statements for finding problem queries
+- ✅ pg\_stat\_statements for finding problem queries
 - ✅ auto_explain for automatic query plans
 - ✅ Index types: B-tree, GIN, GiST, BRIN
 - ✅ Index strategies: composite, covering, partial
@@ -1130,7 +1060,6 @@ SELECT * FROM bluebox.film WHERE EXTRACT(year FROM release_date) = 2024;
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 62 / 63]
 
 ## Training Complete!
@@ -1145,7 +1074,6 @@ Questions? Find us at the PostgreSQL booth!
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 63 / 63]
 
 ## Additional Resources

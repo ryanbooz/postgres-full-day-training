@@ -1,6 +1,5 @@
 autoscale: true
 
-[.background-color: #336791]
 [.footer: Slide 1 / 52]
 
 ## Postgres Configuration and Performance Tuning
@@ -11,12 +10,10 @@ autoscale: true
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 2 / 52]
 
 ## Hour 5 Topics
 
-[.column]
 
 - Postgres architecture
 - Memory configuration
@@ -26,31 +23,21 @@ autoscale: true
 - Parallel query execution
 - Vacuum and autovacuum
 
-[.column]
-
-**Training Materials**
-
-**github.com/Snowflake-Labs/postgres-full-day-training**
-
-![inline 50%](diagrams/qr-code.png)
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 3 / 52]
 
 ## Postgres Architecture
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 4 / 52]
 
 ![inline](diagrams/pg data 1.png)
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 5 / 52]
 
 #### Memory Architecture
@@ -59,7 +46,6 @@ autoscale: true
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 6 / 52]
 
 ## i/o
@@ -68,7 +54,6 @@ autoscale: true
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 7 / 52]
 
 ## Background Processes
@@ -79,12 +64,12 @@ autoscale: true
 | WAL Writer | Flushes WAL to disk |
 | Checkpointer | Periodic full sync |
 | Autovacuum | Cleans dead rows |
-| Stats Collector | Gathers statistics |
+| Logger | Gathers logs |
+| I/O worker | async I/O helper process |
 | Archiver | Archives WAL files |
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 8 / 52]
 
 ## Memory Configuration
@@ -93,7 +78,6 @@ autoscale: true
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 9 / 52]
 
 ## Shared Buffers
@@ -114,7 +98,6 @@ shared_buffers = 8GB   -- For 32GB RAM system
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 10 / 52]
 
 ## Shared Buffers Guidelines
@@ -130,7 +113,6 @@ Beyond 32GB, diminishing returns - OS cache helps too
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 11 / 52]
 
 ## Effective Cache Size
@@ -141,14 +123,13 @@ Tells the planner how much memory is available for caching
 -- Set higher = planner prefers index scans
 -- Set lower = planner prefers sequential scans
 
-effective_cache_size = 24GB  -- For 32GB system
+effective_cache_size = 16GB  -- For 32GB system
 ```
 
 This is just a hint - doesn't allocate memory
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 12 / 52]
 
 ## Cache Hit Ratio
@@ -170,7 +151,6 @@ Target: **> 99%** for OLTP workloads ✓
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 13 / 52]
 
 ## What's in the Buffer Cache?
@@ -194,14 +174,12 @@ LIMIT 10;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 14 / 52]
 
 ## Work Memory
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 15 / 52]
 
 ## What is work_mem?
@@ -219,7 +197,6 @@ SHOW work_mem;  -- Default: 4MB
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 16 / 52]
 
 ## work_mem Behavior
@@ -238,7 +215,6 @@ ORDER BY appearances DESC;                    -- sort
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 17 / 52]
 
 ## Setting work_mem
@@ -257,7 +233,6 @@ RESET work_mem;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 18 / 52]
 
 ## When to Increase work_mem
@@ -275,7 +250,6 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT ...
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 19 / 52]
 
 ## Maintenance Work Memory
@@ -295,7 +269,6 @@ Can be set much higher than work_mem
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 20 / 52]
 
 ## Checkpoints
@@ -317,7 +290,6 @@ checkpoint_completion_target = 0.9
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 21 / 52]
 
 ## Checkpoint Tuning
@@ -337,7 +309,6 @@ Less frequent checkpoints:
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 22 / 52]
 
 ## Sequential vs Random I/O Costs
@@ -353,7 +324,6 @@ random_page_cost = 1.1   -- SSDs have nearly equal random/sequential
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 23 / 52]
 
 ## Parallel Query Execution
@@ -367,7 +337,6 @@ Postgres can use multiple CPU cores for a single query:
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 24 / 52]
 
 ## Parallel Query Defaults
@@ -385,7 +354,6 @@ Parallel kicks in for larger tables automatically.
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 25 / 52]
 
 ## Increasing Parallel Workers
@@ -406,7 +374,6 @@ SELECT pg_reload_conf();
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 26 / 52]
 
 ## Parallel Query in EXPLAIN
@@ -428,7 +395,6 @@ Finalize Aggregate
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 27 / 52]
 
 ## Memory Settings Summary
@@ -442,14 +408,12 @@ Finalize Aggregate
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 28 / 52]
 
 ## Vacuum and Autovacuum
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 29 / 52]
 
 ## Why Does Postgres Need Vacuum?
@@ -464,7 +428,6 @@ Vacuum reclaims this space for reuse.
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 30 / 52]
 
 ## Autovacuum: The Robot Cleaner
@@ -483,12 +446,13 @@ For a 1,000 row table → vacuum at ~250 dead rows
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 31 / 52]
 
 ## Do You Need to Tune Autovacuum?
 
 **Usually no!** Defaults work for most workloads. But lots of dead rows can affect performance.
+
+PostgreSQL 18 comes with autovacuum_worker_slots setting which is help to tune autovacuum_max_workers without a restart.
 
 Consider tuning if you see:
 
@@ -499,7 +463,6 @@ Consider tuning if you see:
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 32 / 52]
 
 ## Check Dead Tuples Waiting for Cleanup
@@ -518,7 +481,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 33 / 52]
 
 ## Tuning: Scale Factor
@@ -539,7 +501,6 @@ SET (autovacuum_vacuum_threshold = 1000000);
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 34 / 52]
 
 ## Tuning: Cost-Based Throttling
@@ -558,7 +519,6 @@ SET (autovacuum_vacuum_cost_limit = 100);
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 35 / 52]
 
 ## Transaction ID Wraparound
@@ -580,7 +540,6 @@ Stay well under 2 billion.
 
 ---
 
-[.background-color: #4B0082]
 [.footer: Slide 36 / 52]
 
 ## Vacuum Summary
@@ -595,14 +554,12 @@ Stay well under 2 billion.
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 37 / 52]
 
 ## Scaling Reads and Writes
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 38 / 52]
 
 ## Scaling Strategies
@@ -625,7 +582,6 @@ Stay well under 2 billion.
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 39 / 52]
 
 ## Read Scaling with Replicas
@@ -634,7 +590,6 @@ Stay well under 2 billion.
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 40 / 52]
 
 ## Connection Pooling
@@ -645,7 +600,6 @@ Reduces connection overhead dramatically
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 41 / 52]
 
 ## Table Partitioning
@@ -670,7 +624,6 @@ CREATE TABLE payment_2025 PARTITION OF bluebox.payment_partitioned
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 42 / 52]
 
 ## Partitioning Benefits
@@ -683,7 +636,6 @@ CREATE TABLE payment_2025 PARTITION OF bluebox.payment_partitioned
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 43 / 52]
 
 ## Write Scaling Challenges
@@ -698,14 +650,12 @@ Options:
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 44 / 52]
 
 ## Configuration Management
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 45 / 52]
 
 ## Where Settings Live
@@ -719,7 +669,6 @@ SHOW data_directory;  -- Data directory
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 46 / 52]
 
 ## Changing Settings
@@ -742,7 +691,6 @@ FROM pg_settings WHERE name IN
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 47 / 52]
 
 ## Applying Changes
@@ -762,7 +710,6 @@ WHERE pending_restart;
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 48 / 52]
 
 ## ALTER SYSTEM
@@ -781,7 +728,6 @@ ALTER SYSTEM RESET work_mem;
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 49 / 52]
 
 ## Starting Point Configuration
@@ -804,7 +750,6 @@ effective_io_concurrency = 200 -- SSD
 
 ---
 
-[.background-color: #CC5500]
 [.footer: Slide 50 / 52]
 
 ## PGTune
@@ -823,7 +768,6 @@ Input:
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 51 / 52]
 
 ## Hour 5 Summary
@@ -839,7 +783,6 @@ Input:
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 52 / 52]
 
 ## Questions?

@@ -1,6 +1,5 @@
 autoscale: true
 
-[.background-color: #336791]
 [.footer: Slide 1 / 52]
 
 ## Postgres Troubleshooting
@@ -11,7 +10,6 @@ autoscale: true
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 2 / 52]
 
 ## Hour 4 Topics
@@ -27,22 +25,21 @@ autoscale: true
 
 [.column]
 
-**Training Materials**
+### github.com/elizabeth-christensen/postgres-full-day-training
 
-**github.com/Snowflake-Labs/postgres-full-day-training**
+Sample database:
 
-![inline 50%](diagrams/qr-code.png)
+### github.com/ryanbooz/bluebox
+
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 3 / 52]
 
 ## Postgres Internal Catalogs
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 4 / 52]
 
 ## The System Catalog
@@ -51,11 +48,10 @@ PostgreSQL stores everything as tables - even metadata
 
 - `pg_catalog` schema contains system tables
 - `information_schema` provides SQL-standard views
-- `pg_stat_*` views provide runtime statistics
+- `pg_stat_*` views provide _*cumulative*_ runtime statistics
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 5 / 52]
 
 ## Essential System Catalogs
@@ -71,7 +67,6 @@ PostgreSQL stores everything as tables - even metadata
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 6 / 52]
 
 ## Exploring pg_class
@@ -97,10 +92,9 @@ WHERE relnamespace = 'bluebox'::regnamespace
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 7 / 52]
 
-## pg_stat_activity - Active Sessions
+## pg\_stat\_activity - Active Sessions
 
 ```sql
 SELECT 
@@ -119,10 +113,9 @@ WHERE datname = 'bluebox'
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 8 / 52]
 
-## pg_stat_user_tables
+## pg\_stat\_user\_tables
 
 ```sql
 SELECT relname, n_live_tup, n_dead_tup, last_autovacuum
@@ -144,10 +137,9 @@ WHERE schemaname = 'bluebox' ORDER BY n_live_tup DESC LIMIT 5;
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 9 / 52]
 
-## pg_stat_user_indexes
+## pg\_stat\_user\_indexes
 
 ```sql
 SELECT relname, indexrelname, idx_scan,
@@ -171,7 +163,6 @@ Find unused indexes with `WHERE idx_scan = 0`
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 10 / 52]
 
 ## pg_locks - Lock Information
@@ -191,14 +182,12 @@ WHERE NOT l.granted;  -- Waiting locks
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 11 / 52]
 
 ![fit](diagrams/lock-types.png)
 
 ---
 
-[.background-color: #2F4F4F]
 [.footer: Slide 12 / 52]
 
 ## Find the Source of a Lock
@@ -228,14 +217,12 @@ ORDER BY lock_depth;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 13 / 52]
 
 ## Logging
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 14 / 52]
 
 ## Why Logging Matters
@@ -250,7 +237,6 @@ Logs are like insurance - you may not need them every day, but when you have a p
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 15 / 52]
 
 ## Check Current Settings
@@ -269,7 +255,6 @@ Let's enable file-based logging!
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 16 / 52]
 
 ## Enable Logging Collector
@@ -287,7 +272,6 @@ ALTER SYSTEM SET log_filename = 'postgresql.log';
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 17 / 52]
 
 ## Restart Container
@@ -303,7 +287,6 @@ This restarts PostgreSQL with logging enabled, writing to `logs/postgresql.log`.
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 18 / 52]
 
 ## Start Tailing Logs
@@ -319,7 +302,6 @@ Keep this running! You'll see log entries appear in real-time as we make changes
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 19 / 52]
 
 ## Log Severity Levels
@@ -342,7 +324,6 @@ SHOW log_min_messages;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 20 / 52]
 
 ## Log SQL Statements
@@ -367,7 +348,6 @@ SELECT title FROM bluebox.film LIMIT 3;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 21 / 52]
 
 ## See It in the Log
@@ -387,7 +367,6 @@ SELECT pg_reload_conf();
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 22 / 52]
 
 ## Log DDL Changes
@@ -409,7 +388,6 @@ Check your tail window - only CREATE and DROP appear!
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 23 / 52]
 
 ## Log Slow Queries
@@ -434,7 +412,6 @@ SELECT pg_sleep(0.2);
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 24 / 52]
 
 ## Log SQL Errors
@@ -461,7 +438,6 @@ STATEMENT:  SELECT * FROM bluebox.nonexistent_table;
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 25 / 52]
 
 ## Log Line Prefix
@@ -490,7 +466,6 @@ SELECT pg_reload_conf();
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 26 / 52]
 
 ## Log Lock Waits
@@ -505,7 +480,6 @@ SELECT pg_reload_conf();
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 27 / 52]
 
 ## Simulate a Lock Wait
@@ -530,7 +504,6 @@ Wait 1+ seconds, then check your log tail! Then `COMMIT;` in Terminal 1.
 
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 28 / 52]
 
 ## pgAudit: Detailed Audit Logging
@@ -546,9 +519,10 @@ ALTER SYSTEM SET pgaudit.log = 'ddl, write';
 SELECT pg_reload_conf();
 ```
 
+This is out of scope for the training / bluebox - try on your own time. 
+
 ---
 
-[.background-color: #8B4513]
 [.footer: Slide 29 / 52]
 
 ## pgAudit: Example Output
@@ -573,14 +547,12 @@ Shows: audit type, statement ID, object type, object name, full SQL.
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 30 / 52]
 
 ## Finding and Killing Problems
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 31 / 52]
 
 ## Common Problems
@@ -593,7 +565,6 @@ Shows: audit type, statement ID, object type, object name, full SQL.
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 32 / 52]
 
 ## Finding Long-Running Queries
@@ -613,7 +584,6 @@ LIMIT 10;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 33 / 52]
 
 ## Finding Idle Transactions
@@ -634,7 +604,6 @@ ORDER BY xact_start;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 34 / 52]
 
 ## Finding Blocked Queries
@@ -656,7 +625,6 @@ WHERE NOT blocked_locks.granted;
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 35 / 52]
 
 ## Canceling a Query
@@ -672,7 +640,6 @@ The query receives an interrupt and can clean up
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 36 / 52]
 
 ## Terminating a Connection
@@ -690,7 +657,6 @@ WHERE datname = 'bluebox'
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 37 / 52]
 
 ## Statement Timeout
@@ -713,7 +679,6 @@ ALTER ROLE app_user SET statement_timeout = '60s';
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 38 / 52]
 
 ## Idle Transaction Timeout
@@ -730,7 +695,6 @@ ALTER ROLE app_user SET idle_in_transaction_session_timeout = '5min';
 
 ---
 
-[.background-color: #006400]
 [.footer: Slide 39 / 52]
 
 ## Lock Timeout
@@ -749,7 +713,6 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 40 / 52]
 
 ## Monitor Postgres
@@ -762,7 +725,6 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 41 / 52]
 
 ## What to Monitor
@@ -787,7 +749,6 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 42 / 52]
 
 ## Key Metrics to Watch
@@ -808,7 +769,6 @@ WHERE datname = 'bluebox';
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 43 / 52]
 
 ## Cache Hit Ratio
@@ -828,14 +788,13 @@ WHERE datname = 'bluebox';
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 44 / 52]
 
 ## Monitoring Tools
 
 | Open Source | Commercial |
 |-------------|------------|
-| pg_stat_monitor | pganalyze |
+| pg\_stat\_monitor | pganalyze |
 | Prometheus + postgres_exporter | Datadog |
 | Grafana | New Relic |
 | pgwatch2 | Sentry |
@@ -843,7 +802,6 @@ WHERE datname = 'bluebox';
 
 ---
 
-[.background-color: #191970]
 [.footer: Slide 45 / 52]
 
 ## Simple Health Check Query
@@ -872,14 +830,12 @@ FROM pg_stat_activity;
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 46 / 52]
 
 ## Getting Help from the Community
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 47 / 52]
 
 ## PostgreSQL Community Resources
@@ -892,7 +848,6 @@ FROM pg_stat_activity;
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 48 / 52]
 
 ## Before Asking for Help
@@ -908,7 +863,6 @@ Gather this information:
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 49 / 52]
 
 ## Good Question Example
@@ -925,7 +879,6 @@ Gather this information:
 
 ---
 
-[.background-color: #800020]
 [.footer: Slide 50 / 52]
 
 ## Other Resources
@@ -938,7 +891,6 @@ Gather this information:
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 51 / 52]
 
 ## Hour 4 Summary
@@ -953,7 +905,6 @@ Gather this information:
 
 ---
 
-[.background-color: #336791]
 [.footer: Slide 52 / 52]
 
 ## Questions?
