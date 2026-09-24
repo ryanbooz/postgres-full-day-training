@@ -15,10 +15,10 @@ footer-style: #7E93B0, Helvetica Neue, text-scale(0.5)
 quote: #F4EFE6, Helvetica Neue Italic
 quote-author: #7FB3E0, Helvetica Neue
 
-[.footer: Slide 1 / 50]
+[.footer: Slide 1 / 52]
 
 ## Getting Comfortable with Postgres
-### Tools, Users, Schemas, Objects, Arrays, JSONB & Window Functions
+### Tools, Schemas, Users, Objects, Arrays, JSONB & Window Functions
 <br>
 <br>
 ## Session 1 of 3 — Beginning Postgres Workshop
@@ -31,29 +31,29 @@ that is repeated here. See pgsummit-nyc-2026/README.md for open questions before
 
 ---
 
-[.footer: Slide 2 / 50]
+[.footer: Slide 2 / 52]
 
 ## Session 1 Topics
 
 - Tools for querying Postgres
-- Users, roles & permissions
 - Schemas
-- Data types & building objects (with a live demo)
+- Users, roles & permissions
+- Data types, constraints & building objects (with a live demo)
 - Arrays and JSON
-- Window functions
+- Window functions and CTEs
 
 ^ Setup (Docker, psql install, loading Bluebox) isn't covered here — see session-0-setup.md if you
 need to get the environment running again.
 
 ---
 
-[.footer: Slide 3 / 50]
+[.footer: Slide 3 / 52]
 
 ## Tools for Querying Postgres
 
 ---
 
-[.footer: Slide 4 / 50]
+[.footer: Slide 4 / 52]
 
 ## GUI Tools
 
@@ -75,7 +75,7 @@ need to get the environment running again.
 
 ---
 
-[.footer: Slide 5 / 50]
+[.footer: Slide 5 / 52]
 
 ## psql - The Postgres CLI
 
@@ -90,7 +90,7 @@ bluebox=#
 
 ---
 
-[.footer: Slide 6 / 50]
+[.footer: Slide 6 / 52]
 
 ## Essential psql Commands
 
@@ -106,13 +106,13 @@ bluebox=#
 
 ---
 
-[.footer: Slide 7 / 50]
+[.footer: Slide 7 / 52]
 
 ## Expanded Display: \x auto
 
 ```sql
 \x auto   -- Let psql decide (recommended!)
-\x on     -- Always record
+\x on     -- Always expanded
 \x off    -- Always horizontal (default)
 ```
 
@@ -129,7 +129,7 @@ email | alice@test.com
 
 ---
 
-[.footer: Slide 8 / 50]
+[.footer: Slide 8 / 52]
 
 ## More Useful psql Settings
 
@@ -142,7 +142,7 @@ email | alice@test.com
 ```
 bluebox=# \timing
 Timing is on.
-bluebox=# SELECT COUNT(*) FROM film;
+bluebox=# SELECT COUNT(*) FROM bluebox.film;
  count 
 -------
   7836
@@ -156,13 +156,127 @@ on host "localhost" at port "5432".
 
 ---
 
-[.footer: Slide 9 / 50]
+[.footer: Slide 9 / 52]
+
+## Schemas
+
+![inline](../diagrams/instance-cluster-schema.png)
+
+---
+
+[.footer: Slide 10 / 52]
+
+## What is a Schema?
+
+A **schema** is a namespace within a database
+
+- Organizes database objects (tables, views, functions)
+- Provides access control boundaries
+- Avoids naming conflicts
+
+---
+
+[.footer: Slide 11 / 52]
+
+## Default Schema
+
+```sql
+-- The default schema is 'public'
+CREATE TABLE my_table (id int);
+
+-- Same as:
+CREATE TABLE public.my_table (id int);
+```
+
+---
+
+[.footer: Slide 12 / 52]
+
+## Creating Schemas
+
+```sql
+-- Bluebox already has its schema, but you could create more:
+CREATE SCHEMA reporting;
+
+-- Then create tables in that schema
+CREATE TABLE reporting.daily_stats (...);
+```
+
+Bluebox uses `bluebox` schema to organize all its tables
+
+---
+
+[.footer: Slide 13 / 52]
+
+## Schema Search Path
+
+```sql
+-- View current search path
+SHOW search_path;
+-- Output: "$user", public
+
+-- Set search path
+SET search_path TO bluebox, public;
+
+-- Now queries will look in bluebox first
+SELECT * FROM film;  -- Same as bluebox.film
+```
+
+---
+
+[.footer: Slide 14 / 52]
+
+## Bluebox Schema
+
+The Bluebox database uses a `bluebox` schema with 17 tables:
+
+```sql
+SET search_path TO bluebox, public;
+\dt
+```
+
+```
+ Schema  |        tablename        
+---------+-------------------------
+ bluebox | customer      (186,740 rows)
+ bluebox | film          (7,836 rows)
+ bluebox | person        (258,772 rows)
+ bluebox | store         (196 rows)
+ ...and 13 more tables
+```
+
+---
+
+[.footer: Slide 15 / 52]
+
+## Bluebox Tables
+
+```sql
+\d bluebox.film
+```
+
+```
+      Column       |    Type     |          Description
+-------------------+-------------+---------------------------
+ film_id           | bigint      | Primary key
+ title             | text        | Movie title
+ overview          | text        | Plot summary
+ release_date      | date        | Release date
+ vote_average      | real        | TMDB rating (0-10)
+ popularity        | real        | TMDB popularity score
+ budget            | bigint      | Production budget
+ revenue           | bigint      | Box office revenue
+```
+
+---
+
+[.footer: Slide 16 / 52]
 
 ## Users and Permissions
 
 ---
 
-[.footer: Slide 10 / 50]
+[.footer: Slide 17 / 52]
 
 ## Postgres Roles
 
@@ -178,7 +292,7 @@ CREATE ROLE readonly;
 
 ---
 
-[.footer: Slide 11 / 50]
+[.footer: Slide 18 / 52]
 
 ## Role Attributes
 
@@ -198,7 +312,7 @@ Common attributes:
 
 ---
 
-[.footer: Slide 12 / 50]
+[.footer: Slide 19 / 52]
 
 ## Granting Privileges
 
@@ -218,7 +332,7 @@ GRANT SELECT, INSERT, UPDATE ON bluebox.rental TO app_user;
 
 ---
 
-[.footer: Slide 13 / 50]
+[.footer: Slide 20 / 52]
 
 ## Manage Privileges with Groups
 
@@ -236,7 +350,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA bluebox TO data_analytics;
 
 ---
 
-[.footer: Slide 14 / 50]
+[.footer: Slide 21 / 52]
 
 ## Grant Users Role Membership
 
@@ -253,7 +367,7 @@ GRANT data_analytics TO maria;
 
 ---
 
-[.footer: Slide 15 / 50]
+[.footer: Slide 22 / 52]
 
 ## View Role Memberships
 
@@ -278,98 +392,7 @@ session — good material for a deeper security-focused talk, but more than this
 
 ---
 
-[.footer: Slide 16 / 50]
-
-## Schemas
-
-![inline](../diagrams/instance-cluster-schema.png)
-
----
-
-[.footer: Slide 17 / 50]
-
-## What is a Schema?
-
-A **schema** is a namespace within a database
-
-- Organizes database objects (tables, views, functions)
-- Provides access control boundaries
-- Avoids naming conflicts
-
----
-
-[.footer: Slide 18 / 50]
-
-## Default Schema
-
-```sql
--- The default schema is 'public'
-CREATE TABLE my_table (id int);
-
--- Same as:
-CREATE TABLE public.my_table (id int);
-```
-
----
-
-[.footer: Slide 19 / 50]
-
-## Creating Schemas
-
-```sql
--- Bluebox already has its schema, but you could create more:
-CREATE SCHEMA reporting;
-
--- Then create tables in that schema
-CREATE TABLE reporting.daily_stats (...);
-```
-
-Bluebox uses `bluebox` schema to organize all its tables
-
----
-
-[.footer: Slide 20 / 50]
-
-## Schema Search Path
-
-```sql
--- View current search path
-SHOW search_path;
--- Output: "$user", public
-
--- Set search path
-SET search_path TO bluebox, public;
-
--- Now queries will look in bluebox first
-SELECT * FROM film;  -- Same as bluebox.film
-```
-
----
-
-[.footer: Slide 21 / 50]
-
-## Bluebox Schema
-
-The Bluebox database uses a `bluebox` schema with 17 tables:
-
-```sql
-SET search_path TO bluebox, public;
-\dt
-```
-
-```
- Schema  |        tablename        
----------+-------------------------
- bluebox | customer      (186,740 rows)
- bluebox | film          (7,836 rows)
- bluebox | person        (258,772 rows)
- bluebox | store         (196 rows)
- ...and 13 more tables
-```
-
----
-
-[.footer: Slide 22 / 50]
+[.footer: Slide 23 / 52]
 
 ## ALTER User Search Path
 
@@ -383,13 +406,13 @@ SELECT * FROM film;  -- Same as bluebox.film
 
 ---
 
-[.footer: Slide 23 / 50]
+[.footer: Slide 24 / 52]
 
 ## Object and Data Types
 
 ---
 
-[.footer: Slide 24 / 50]
+[.footer: Slide 25 / 52]
 
 ## Database Objects
 
@@ -401,7 +424,7 @@ SELECT * FROM film;  -- Same as bluebox.film
 
 ---
 
-[.footer: Slide 25 / 50]
+[.footer: Slide 26 / 52]
 
 ## Common Data Types
 
@@ -432,7 +455,7 @@ Other
 
 ---
 
-[.footer: Slide 26 / 50]
+[.footer: Slide 27 / 52]
 
 ## ⏰ Time: Use TIMESTAMPTZ!
 
@@ -455,7 +478,7 @@ TIMESTAMPTZ handles daylight saving automatically!
 
 ---
 
-[.footer: Slide 27 / 50]
+[.footer: Slide 28 / 52]
 
 ## 💰 Use NUMERIC, Not MONEY!
 
@@ -485,7 +508,7 @@ NUMERIC stores exact values - no floating point errors!
 
 ---
 
-[.footer: Slide 28 / 50]
+[.footer: Slide 29 / 52]
 
 ## 🎯 Custom Data Types: ENUM
 
@@ -513,7 +536,28 @@ WHERE rating = 'PG-13' LIMIT 3;
 
 ---
 
-[.footer: Slide 29 / 50]
+[.footer: Slide 30 / 52]
+
+## Constraints
+
+Rules that enforce data integrity at the database level
+
+| Constraint | Purpose |
+|------------|---------|
+| `PRIMARY KEY` | Unique identifier for each row |
+| `FOREIGN KEY` | Links to another table's primary key (`REFERENCES`) |
+| `NOT NULL` | Column must have a value |
+| `UNIQUE` | No duplicate values allowed |
+| `CHECK` | Custom validation rules |
+| `DEFAULT` | Auto-fill value if none provided |
+
+The table we're about to create uses four of these.
+
+^ Constraints catch bad data before it enters your database - not in application code! Slide taken from hour-2-sql.md so the demo table's PRIMARY KEY / REFERENCES / CHECK / DEFAULT aren't new to anyone.
+
+---
+
+[.footer: Slide 31 / 52]
 
 ## Creating a Table
 
@@ -534,7 +578,7 @@ CREATE TABLE bluebox.customer_review (
 
 ---
 
-[.footer: Slide 30 / 50]
+[.footer: Slide 32 / 52]
 
 ## 🔧 Demo: Add Yourself as a Customer
 
@@ -561,7 +605,7 @@ Note: this is a great use of the Postgres feature `RETURNING`
 
 ---
 
-[.footer: Slide 31 / 50]
+[.footer: Slide 33 / 52]
 
 ## 🔧 Demo: Find Films to Review
 
@@ -583,7 +627,7 @@ WHERE title IN ('The Dark Knight', 'Inception',
 
 ---
 
-[.footer: Slide 32 / 50]
+[.footer: Slide 34 / 52]
 
 ## 🔧 Demo: Insert Your Reviews
 
@@ -601,7 +645,36 @@ VALUES
 
 ---
 
-[.footer: Slide 33 / 50]
+[.footer: Slide 35 / 52]
+
+## Joining Tables
+
+Reviews store IDs; a **JOIN** matches rows across tables to get names back
+
+```sql
+SELECT f.title, p.name as actor
+FROM bluebox.film f
+INNER JOIN bluebox.film_cast fc ON f.film_id = fc.film_id
+INNER JOIN bluebox.person p ON fc.person_id = p.person_id
+WHERE f.title = 'The Dark Knight'
+LIMIT 3;
+```
+
+```
+      title      |      actor       
+-----------------+------------------
+ The Dark Knight | Gary Oldman
+ The Dark Knight | Morgan Freeman
+ The Dark Knight | William Fichtner
+```
+
+`INNER JOIN` keeps matching rows only; `LEFT JOIN` also keeps rows with no match
+
+^ Just enough JOIN to read the next demo query. The full JOIN walkthrough (LEFT/RIGHT/FULL, diagram) is in hour-2-sql.md.
+
+---
+
+[.footer: Slide 36 / 52]
 
 ## 🔧 Demo: Querying Your Reviews
 
@@ -625,36 +698,13 @@ ORDER BY r.created_at DESC;
 
 ---
 
-[.footer: Slide 34 / 50]
-
-## Bluebox Tables
-
-```sql
-\d bluebox.film
-```
-
-```
-      Column       |    Type     |          Description
--------------------+-------------+---------------------------
- film_id           | bigint      | Primary key
- title             | text        | Movie title
- overview          | text        | Plot summary
- release_date      | date        | Release date
- vote_average      | real        | TMDB rating (0-10)
- popularity        | real        | TMDB popularity score
- budget            | bigint      | Production budget
- revenue           | bigint      | Box office revenue
-```
-
----
-
-[.footer: Slide 35 / 50]
+[.footer: Slide 37 / 52]
 
 ## Arrays and JSON
 
 ---
 
-[.footer: Slide 36 / 50]
+[.footer: Slide 38 / 52]
 
 ## Arrays in PostgreSQL
 
@@ -682,25 +732,28 @@ Drama (18), Action (28), Crime (80), Thriller (53)
 
 ---
 
-[.footer: Slide 37 / 50]
+[.footer: Slide 39 / 52]
 
 ## Adding to an Array
 
 ```sql
+BEGIN;  -- demo only: we'll roll this back
+
 -- Add a genre to a film's array
 UPDATE bluebox.film
 SET genre_ids = genre_ids || ARRAY[9648]  -- Add Mystery
-WHERE film_id = 155;
+WHERE film_id = 155
+RETURNING genre_ids;
+-- {18,28,80,53,9648}
 
--- Alternative: array_append function
-UPDATE bluebox.film
-SET genre_ids = array_append(genre_ids, 9648)
-WHERE film_id = 155;
+-- Alternative: array_append(genre_ids, 9648)
+
+ROLLBACK;  -- keep The Dark Knight's genres unchanged
 ```
 
 ---
 
-[.footer: Slide 38 / 50]
+[.footer: Slide 40 / 52]
 
 ## Array Operators
 
@@ -715,7 +768,7 @@ WHERE film_id = 155;
 
 ---
 
-[.footer: Slide 39 / 50]
+[.footer: Slide 41 / 52]
 
 ## Querying Arrays
 
@@ -745,7 +798,7 @@ WHERE f.title = 'The Dark Knight';
 
 ---
 
-[.footer: Slide 40 / 50]
+[.footer: Slide 42 / 52]
 
 ## JSON vs JSONB
 
@@ -762,7 +815,7 @@ WHERE f.title = 'The Dark Knight';
 
 ---
 
-[.footer: Slide 41 / 50]
+[.footer: Slide 43 / 52]
 
 ## Working with JSONB
 
@@ -782,10 +835,11 @@ VALUES (1, '{
     "budget": 160000000,
     "awards": ["Oscar", "BAFTA"]
 }');
-
+```
 
 [.column]
 
+```sql
 -- Different row, completely different structure - that's OK!
 INSERT INTO movie_metadata (movie_id, data)
 VALUES (2, '{
@@ -799,7 +853,7 @@ No schema enforcement - each row can have different structures!
 
 ---
 
-[.footer: Slide 42 / 50]
+[.footer: Slide 44 / 52]
 
 ## JSONB Operators
 
@@ -815,7 +869,7 @@ No schema enforcement - each row can have different structures!
 
 ---
 
-[.footer: Slide 43 / 50]
+[.footer: Slide 45 / 52]
 
 ## Querying JSONB
 
@@ -839,7 +893,7 @@ WHERE data @> '{"director": "Christopher Nolan"}';
 
 ---
 
-[.footer: Slide 44 / 50]
+[.footer: Slide 46 / 52]
 
 ## Window Functions
 
@@ -855,13 +909,13 @@ Key difference from GROUP BY: window functions keep all rows!
 
 ---
 
-[.footer: Slide 45 / 50]
+[.footer: Slide 47 / 52]
 
 ![fit](../diagrams/window-functions.png)
 
 ---
 
-[.footer: Slide 46 / 50]
+[.footer: Slide 48 / 52]
 
 ## Running Totals
 
@@ -887,7 +941,7 @@ ORDER BY payment_date;
 
 ---
 
-[.footer: Slide 47 / 50]
+[.footer: Slide 49 / 52]
 
 ## LAG - Compare to Previous Row
 
@@ -912,63 +966,76 @@ ORDER BY payment_date;
 
 ---
 
-[.footer: Slide 48 / 50]
+[.footer: Slide 50 / 52]
 
-## LEAD - Look Ahead
+## RANK with PARTITION BY
 
 ```sql
-SELECT 
-    title,
-    release_date,
-    LEAD(title) OVER (ORDER BY release_date) as next_film,
-    LEAD(release_date) OVER (ORDER BY release_date) as next_release
+SELECT title, rating, vote_average,
+       RANK() OVER (PARTITION BY rating
+                    ORDER BY vote_average DESC) AS rank_in_rating
 FROM bluebox.film
-WHERE release_date >= '2023-01-01'
-ORDER BY release_date
-LIMIT 5;
+WHERE rating IN ('G', 'PG') AND vote_count > 18000
+ORDER BY rating, rank_in_rating;
 ```
 
-`LEAD` looks forward, `LAG` looks backward
+```
+                  title                   | rating | vote_average | rank_in_rating 
+------------------------------------------+--------+--------------+----------------
+ Finding Nemo                             | G      |          7.8 |              1
+ Harry Potter and the Prisoner of Azkaban | PG     |            8 |              1
+ Up                                       | PG     |            8 |              1
+ Harry Potter and the Philosopher's Stone | PG     |          7.9 |              3
+ Inside Out                               | PG     |          7.9 |              3
+ Harry Potter and the Half-Blood Prince   | PG     |          7.7 |              5
+ Harry Potter and the Chamber of Secrets  | PG     |          7.7 |              5
+```
+
+`PARTITION BY rating` restarts the ranking for each rating. Ties share a rank and `RANK` skips ahead (1, 1, 3); `DENSE_RANK` wouldn't skip, `ROW_NUMBER` ignores ties.
+
+^ Replaces the LEAD slide from hour-2: LAG already shows "look at another row", and this covers the ranking/PARTITION BY items the intro slide promises. LEAD is still in hour-2-sql.md.
 
 ---
 
-[.footer: Slide 49 / 50]
+[.footer: Slide 51 / 52]
 
 ## One More Technique: CTEs
 
-Window functions often get combined with a **CTE** (Common Table Expression) to keep a multi-step query readable:
+You can't filter on a window function in `WHERE`. Wrap it in a **CTE** (Common Table Expression) and filter the result:
 
 ```sql
-WITH customer_totals AS (
-    SELECT customer_id, SUM(amount) as total_spent
-    FROM bluebox.payment
-    GROUP BY customer_id
+WITH ranked AS (
+    SELECT title, rating, vote_average,
+           RANK() OVER (PARTITION BY rating
+                        ORDER BY vote_average DESC) AS rnk
+    FROM bluebox.film
+    WHERE vote_count > 5000
 )
-SELECT 
-    c.full_name,
-    ct.total_spent,
-    ROUND((SELECT AVG(total_spent) FROM customer_totals), 2) as avg_spent
-FROM customer_totals ct
-JOIN bluebox.customer c ON ct.customer_id = c.customer_id
-WHERE ct.total_spent > (SELECT AVG(total_spent) FROM customer_totals)
-ORDER BY ct.total_spent DESC LIMIT 5;
+SELECT rating, rnk, title, vote_average
+FROM ranked
+WHERE rnk <= 2 AND rating IN ('G', 'PG', 'PG-13')
+ORDER BY rating, rnk;
 ```
 
 ```
-        full_name        | total_spent | avg_spent 
--------------------------+-------------+-----------
- Dr. Doris Abshire DDS   |      111.44 |     36.60
- Mr. Theodore Willms V   |      107.46 |     36.60
- Mrs. Ezequiel Orn I     |      107.46 |     36.60
+ rating | rnk |                     title                     | vote_average 
+--------+-----+-----------------------------------------------+--------------
+ G      |   1 | The Lion King                                 |          8.3
+ G      |   2 | 2001: A Space Odyssey                         |          8.1
+ PG     |   1 | Spider-Man: Into the Spider-Verse             |          8.4
+ PG     |   1 | The Empire Strikes Back                       |          8.4
+ PG-13  |   1 | Forrest Gump                                  |          8.5
+ PG-13  |   1 | The Lord of the Rings: The Return of the King |          8.5
+ PG-13  |   1 | The Dark Knight                               |          8.5
 ```
 
-The CTE `customer_totals` is referenced **3 times** - that's the power!
+The CTE names one step of the query, so the final `SELECT` reads top to bottom: "top 2 per rating".
 
-^ Judgment call: per the brief, CTEs are folded in here as a technique rather than given their own section/divider. Skip this slide first if time is short.
+^ Judgment call: per the brief, CTEs are folded in here as a technique rather than given their own section/divider. Skip this slide first if time is short. The "calculate once, use multiple times" customer_totals CTE example is still in hour-2-sql.md.
 
 ---
 
-[.footer: Slide 50 / 50]
+[.footer: Slide 52 / 52]
 
 ## Questions?
 

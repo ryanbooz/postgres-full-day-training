@@ -39,7 +39,7 @@ pgsummit-nyc-2026/README.md.
 
 All slides, exercises, and Docker setup:
 
-### github.com/elizabeth-christensen/postgres-full-day-training
+### github.com/ryanbooz/postgres-full-day-training
 
 Sample database:
 
@@ -58,10 +58,12 @@ postgres.app for macs will create a psql connection
 
 ## Setup Overview
 
-1. Start PostgreSQL (Docker)
-2. Install a psql client
-3. Connect and load sample data
-4. Verify everything works
+1. Clone the training repo
+2. Start PostgreSQL (Docker)
+3. Install a psql client
+4. Connect to PostgreSQL
+5. Create the database and load Bluebox
+6. Verify everything works
 
 ~10-15 minutes
 
@@ -91,7 +93,7 @@ docker compose version
 
 ```bash
 ## Clone the training repo
-git clone https://github.com/Snowflake-Labs/postgres-full-day-training.git
+git clone https://github.com/ryanbooz/postgres-full-day-training.git
 
 ## Navigate into the folder
 cd postgres-full-day-training

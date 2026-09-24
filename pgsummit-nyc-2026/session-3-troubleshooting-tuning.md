@@ -15,10 +15,10 @@ footer-style: #7E93B0, Helvetica Neue, text-scale(0.5)
 quote: #F4EFE6, Helvetica Neue Italic
 quote-author: #7FB3E0, Helvetica Neue
 
-[.footer: Slide 1 / 63]
+[.footer: Slide 1 / 56]
 
 ## When Postgres Misbehaves
-### Locks, Monitoring & the Config That Matters
+### Locks, Monitoring, Key Config & Reading Query Plans
 <br>
 <br>
 ## Session 3 of 3 — Beginning Postgres Workshop
@@ -28,88 +28,26 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ---
 
-[.footer: Slide 2 / 63]
+[.footer: Slide 2 / 56]
 
 ## Session 3 Topics
 
-- Locks & blocking
+- Locks & blocking, with a live demo
 - Finding and stopping bad queries, timeouts as guardrails
-- Monitoring essentials
+- Monitoring essentials and pg_stat_statements
 - A few key config settings (shared_buffers, work_mem)
 - Reading query plans with EXPLAIN
 - Index basics and common performance patterns
 
 ---
 
-[.footer: Slide 3 / 63]
+[.footer: Slide 3 / 56]
 
-## Locks & Blocking
-
----
-
-[.footer: Slide 4 / 63]
-
-## pg_locks - Lock Information
-
-```sql
-SELECT 
-    l.pid,
-    l.locktype,
-    l.mode,
-    l.granted,
-    a.usename,
-    a.query
-FROM pg_locks l
-JOIN pg_stat_activity a ON l.pid = a.pid
-WHERE NOT l.granted;  -- Waiting locks
-```
+## Locks, Blocking & Runaway Queries
 
 ---
 
-[.footer: Slide 5 / 63]
-
-![fit](../diagrams/lock-types.png)
-
----
-
-[.footer: Slide 6 / 63]
-
-## Find the Source of a Lock
-
-```sql
-WITH sos AS (
-  SELECT array_cat(array_agg(pid),
-    array_agg((pg_blocking_pids(pid))[array_length(pg_blocking_pids(pid),1)])) pids
-  FROM pg_locks WHERE NOT granted
-)
-SELECT a.pid, a.usename, a.state,
-   a.wait_event_type || ': ' || a.wait_event AS wait_event,
-   current_timestamp-a.state_change time_in_state,
-   l.relation::regclass relname, l.locktype, l.mode,
-   pg_blocking_pids(l.pid) blocking_pids,
-   (pg_blocking_pids(l.pid))[array_length(pg_blocking_pids(l.pid),1)] last_session,
-   coalesce((pg_blocking_pids(l.pid))[1]||'.'||coalesce(
-     case when locktype='transactionid' then 1 
-     else array_length(pg_blocking_pids(l.pid),1)+1 end,0),
-     a.pid||'.0') lock_depth,
-   a.query
-FROM pg_stat_activity a
-JOIN sos s ON (a.pid = any(s.pids))
-LEFT OUTER JOIN pg_locks l ON (a.pid = l.pid and not l.granted)
-ORDER BY lock_depth;
-```
-
-^ Passing mention: if you want to see lock waits show up in the Postgres log automatically, `log_lock_waits` will do that - detailed logging configuration is out of scope for this session.
-
----
-
-[.footer: Slide 7 / 63]
-
-## Finding and Killing Problems
-
----
-
-[.footer: Slide 8 / 63]
+[.footer: Slide 4 / 56]
 
 ## Common Problems
 
@@ -121,7 +59,74 @@ ORDER BY lock_depth;
 
 ---
 
-[.footer: Slide 9 / 63]
+[.footer: Slide 5 / 56]
+
+![fit](../diagrams/lock-types.png)
+
+---
+
+[.footer: Slide 6 / 56]
+
+## 🔧 Demo: Create a Blocking Lock
+
+[.column]
+
+**Window 1**
+
+```sql
+BEGIN;
+UPDATE bluebox.film
+SET popularity = popularity
+WHERE film_id = 155;
+-- no COMMIT yet: this session is
+-- now "idle in transaction"
+```
+
+[.column]
+
+**Window 2**
+
+```sql
+UPDATE bluebox.film
+SET popularity = popularity
+WHERE film_id = 155;
+-- hangs: waiting for window 1's
+-- row lock
+```
+
+Find the blocker from a third window (next slide). `ROLLBACK` in window 1 and window 2 finishes instantly.
+
+^ Three psql sessions side by side. Both UPDATEs write the same value back, so the demo leaves Bluebox unchanged.
+
+---
+
+[.footer: Slide 7 / 56]
+
+## Who Is Blocking Whom?
+
+```sql
+SELECT pid,
+       pg_blocking_pids(pid) AS blocked_by,
+       wait_event_type,
+       NOW() - query_start AS waiting,
+       LEFT(query, 40) AS query
+FROM pg_stat_activity
+WHERE cardinality(pg_blocking_pids(pid)) > 0;
+```
+
+```
+ pid | blocked_by | wait_event_type |     waiting     |                  query                   
+-----+------------+-----------------+-----------------+------------------------------------------
+ 166 | {164}      | Lock            | 00:00:02.104775 | UPDATE bluebox.film SET popularity = pop
+```
+
+Look up pid 164 in `pg_stat_activity`: it's window 1, `idle in transaction`. That pid is what we cancel or terminate in a moment.
+
+^ One query instead of the three lock queries from hour-4 (raw pg_locks, the recursive "source of the lock" query, and the pg_locks self-join): pg_blocking_pids() does the pg_locks work for you and also catches row and transaction locks. Passing mention: if you want to see lock waits show up in the Postgres log automatically, `log_lock_waits` will do that - detailed logging configuration is out of scope for this session.
+
+---
+
+[.footer: Slide 8 / 56]
 
 ## Finding Long-Running Queries
 
@@ -140,7 +145,7 @@ LIMIT 10;
 
 ---
 
-[.footer: Slide 10 / 63]
+[.footer: Slide 9 / 56]
 
 ## Finding Idle Transactions
 
@@ -160,28 +165,7 @@ ORDER BY xact_start;
 
 ---
 
-[.footer: Slide 11 / 63]
-
-## Finding Blocked Queries
-
-```sql
-SELECT 
-    blocked.pid AS blocked_pid,
-    blocked.query AS blocked_query,
-    blocking.pid AS blocking_pid,
-    blocking.query AS blocking_query
-FROM pg_stat_activity blocked
-JOIN pg_locks blocked_locks ON blocked.pid = blocked_locks.pid
-JOIN pg_locks blocking_locks ON blocked_locks.locktype = blocking_locks.locktype
-    AND blocked_locks.relation = blocking_locks.relation
-    AND blocked_locks.pid != blocking_locks.pid
-JOIN pg_stat_activity blocking ON blocking_locks.pid = blocking.pid
-WHERE NOT blocked_locks.granted;
-```
-
----
-
-[.footer: Slide 12 / 63]
+[.footer: Slide 10 / 56]
 
 ## Canceling a Query
 
@@ -196,7 +180,7 @@ The query receives an interrupt and can clean up
 
 ---
 
-[.footer: Slide 13 / 63]
+[.footer: Slide 11 / 56]
 
 ## Terminating a Connection
 
@@ -213,7 +197,7 @@ WHERE datname = 'bluebox'
 
 ---
 
-[.footer: Slide 14 / 63]
+[.footer: Slide 12 / 56]
 
 ## Statement Timeout
 
@@ -235,7 +219,7 @@ ALTER ROLE app_user SET statement_timeout = '60s';
 
 ---
 
-[.footer: Slide 15 / 63]
+[.footer: Slide 13 / 56]
 
 ## Idle Transaction Timeout
 
@@ -251,7 +235,7 @@ ALTER ROLE app_user SET idle_in_transaction_session_timeout = '5min';
 
 ---
 
-[.footer: Slide 16 / 63]
+[.footer: Slide 14 / 56]
 
 ## Lock Timeout
 
@@ -269,7 +253,7 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.footer: Slide 17 / 63]
+[.footer: Slide 15 / 56]
 
 ## Monitor Postgres
 
@@ -281,7 +265,7 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.footer: Slide 18 / 63]
+[.footer: Slide 16 / 56]
 
 ## What to Monitor
 
@@ -305,7 +289,7 @@ ALTER TABLE bluebox.rental ADD COLUMN new_col INT;
 
 ---
 
-[.footer: Slide 19 / 63]
+[.footer: Slide 17 / 56]
 
 ## Key Metrics to Watch
 
@@ -325,7 +309,7 @@ WHERE datname = 'bluebox';
 
 ---
 
-[.footer: Slide 20 / 63]
+[.footer: Slide 18 / 56]
 
 ## Cache Hit Ratio
 
@@ -344,7 +328,7 @@ WHERE datname = 'bluebox';
 
 ---
 
-[.footer: Slide 21 / 63]
+[.footer: Slide 19 / 56]
 
 ## Monitoring Tools
 
@@ -353,12 +337,12 @@ WHERE datname = 'bluebox';
 | pg\_stat\_monitor | pganalyze |
 | Prometheus + postgres_exporter | Datadog |
 | Grafana | New Relic |
-| pgwatch2 | Sentry |
-| pgmonitor ||
+| pgwatch | |
+| pgmonitor | |
 
 ---
 
-[.footer: Slide 22 / 63]
+[.footer: Slide 20 / 56]
 
 ## Simple Health Check Query
 
@@ -380,13 +364,40 @@ WHERE state = 'active'
 UNION ALL
 SELECT 
     'oldest_transaction', 
-    COALESCE(max(age(backend_xmin))::text, 'none')
+    COALESCE(max(NOW() - xact_start)::text, 'none')
 FROM pg_stat_activity;
 ```
 
 ---
 
-[.footer: Slide 23 / 63]
+[.footer: Slide 21 / 56]
+
+## pg_stat_statements: Finding Slow Queries
+
+Tracks every query shape: calls, total and average time. It needs `shared_preload_libraries` (our `docker-compose.yml` preloads it; on your own server, set it and restart).
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+SELECT 
+    LEFT(query, 60) as query,
+    calls,
+    ROUND(total_exec_time::numeric, 2) as total_ms,
+    ROUND(mean_exec_time::numeric, 2) as avg_ms,
+    ROUND((100 * total_exec_time / 
+        SUM(total_exec_time) OVER ())::numeric, 2) as pct
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 10;
+```
+
+The top of this list is what you EXPLAIN - right after a few memory settings.
+
+^ Judgment call: this is a light touch of pg_stat_statements - just enough to answer "how would I even know what to run EXPLAIN on?", so it now sits with monitoring, before EXPLAIN. Preloading it in docker-compose.yml means no container restart mid-talk. The fuller hour-6 treatment (generating activity, average time, I/O breakdown, resetting stats) and auto_explain are both cut here as more than this audience needs today.
+
+---
+
+[.footer: Slide 22 / 56]
 
 ## Memory Configuration
 
@@ -396,7 +407,7 @@ FROM pg_stat_activity;
 
 ---
 
-[.footer: Slide 24 / 63]
+[.footer: Slide 23 / 56]
 
 ## Shared Buffers
 
@@ -416,7 +427,7 @@ shared_buffers = 8GB   -- For 32GB RAM system
 
 ---
 
-[.footer: Slide 25 / 63]
+[.footer: Slide 24 / 56]
 
 ## Shared Buffers Guidelines
 
@@ -431,7 +442,7 @@ Beyond 32GB, diminishing returns - OS cache helps too
 
 ---
 
-[.footer: Slide 26 / 63]
+[.footer: Slide 25 / 56]
 
 ## What is work_mem?
 
@@ -448,7 +459,7 @@ SHOW work_mem;  -- Default: 4MB
 
 ---
 
-[.footer: Slide 27 / 63]
+[.footer: Slide 26 / 56]
 
 ## Setting work_mem
 
@@ -466,26 +477,7 @@ RESET work_mem;
 
 ---
 
-[.footer: Slide 28 / 63]
-
-## When to Increase work_mem
-
-Signs you need more:
-
-```sql
--- Check for disk sorts
-EXPLAIN (ANALYZE, BUFFERS) SELECT ...
-
--- Look for:
--- Sort Method: external merge  ← disk sort, increase work_mem
--- Sort Method: quicksort      ← memory sort, good!
-```
-
-^ This is the bridge into EXPLAIN, coming up next - "Sort Method" is something you'll actually see for yourself in a few slides.
-
----
-
-[.footer: Slide 29 / 63]
+[.footer: Slide 27 / 56]
 
 ## Maintenance Work Memory
 
@@ -504,13 +496,32 @@ Can be set much higher than work_mem
 
 ---
 
-[.footer: Slide 30 / 63]
+[.footer: Slide 28 / 56]
+
+## When to Increase work_mem
+
+Signs you need more:
+
+```sql
+-- Check for disk sorts
+EXPLAIN (ANALYZE, BUFFERS) SELECT ...
+
+-- Look for:
+-- Sort Method: external merge  ← disk sort, increase work_mem
+-- Sort Method: quicksort      ← memory sort, good!
+```
+
+^ This is the bridge into EXPLAIN, coming up next - "Sort Method" is something you'll actually see for yourself in a few slides.
+
+---
+
+[.footer: Slide 29 / 56]
 
 ## EXPLAIN - The Essential Tool
 
 ---
 
-[.footer: Slide 31 / 63]
+[.footer: Slide 30 / 56]
 
 ## What is EXPLAIN?
 
@@ -531,7 +542,7 @@ Output:
 
 ---
 
-[.footer: Slide 32 / 63]
+[.footer: Slide 31 / 56]
 
 ## EXPLAIN Options
 
@@ -552,7 +563,7 @@ SELECT * FROM bluebox.film WHERE vote_average > 8;
 
 ---
 
-[.footer: Slide 33 / 63]
+[.footer: Slide 32 / 56]
 
 ## Reading Plan Costs
 
@@ -564,12 +575,12 @@ Seq Scan on film  (cost=0.00..941.95 rows=110 width=777)
 ```
 
 - **Cost**: Arbitrary units, relative comparison
-- **Rows**: Estimated row count (110 films with rating > 8)
+- **Rows**: Estimated row count from table statistics (110 films with vote_average > 8; ANALYZE and autovacuum keep these fresh)
 - **Width**: Average row size in bytes (777 bytes per film row)
 
 ---
 
-[.footer: Slide 34 / 63]
+[.footer: Slide 33 / 56]
 
 ## EXPLAIN ANALYZE
 
@@ -591,7 +602,7 @@ Estimated 110 rows, got 111 — pretty close!
 
 ---
 
-[.footer: Slide 35 / 63]
+[.footer: Slide 34 / 56]
 
 ## Warning About EXPLAIN ANALYZE
 
@@ -609,12 +620,12 @@ ROLLBACK;
 
 ---
 
-[.footer: Slide 36 / 63]
+[.footer: Slide 35 / 56]
 
 ## EXPLAIN with BUFFERS
 
 ```sql
-EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM bluebox.film WHERE vote_average > 8;
 ```
 
 ```
@@ -634,7 +645,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
 
 ---
 
-[.footer: Slide 37 / 63]
+[.footer: Slide 36 / 56]
 
 [.column]
 
@@ -646,7 +657,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
 
 ---
 
-[.footer: Slide 38 / 63]
+[.footer: Slide 37 / 56]
 
 [.column]
 
@@ -662,7 +673,7 @@ Reads every row in the table
 
 ---
 
-[.footer: Slide 39 / 63]
+[.footer: Slide 38 / 56]
 
 [.column]
 
@@ -678,7 +689,7 @@ Uses index to find rows, then fetches from table
 
 ---
 
-[.footer: Slide 40 / 63]
+[.footer: Slide 39 / 56]
 
 [.column]
 
@@ -694,7 +705,7 @@ All needed data is in the index - no table access!
 
 ---
 
-[.footer: Slide 41 / 63]
+[.footer: Slide 40 / 56]
 
 [.column]
 
@@ -710,14 +721,14 @@ Two-phase: Build bitmap of matching rows, then fetch in physical order
 
 ---
 
-[.footer: Slide 42 / 63]
+[.footer: Slide 41 / 56]
 
 ## Join Operations - Nested Loop
 
 ```sql
-EXPLAIN SELECT f.title, p.name FROM film f
-JOIN film_cast fc ON f.film_id = fc.film_id
-JOIN person p ON fc.person_id = p.person_id
+EXPLAIN SELECT f.title, p.name FROM bluebox.film f
+JOIN bluebox.film_cast fc ON f.film_id = fc.film_id
+JOIN bluebox.person p ON fc.person_id = p.person_id
 WHERE f.film_id = 155;
 ```
 
@@ -733,7 +744,7 @@ Best for small result sets with good indexes!
 
 ---
 
-[.footer: Slide 43 / 63]
+[.footer: Slide 42 / 56]
 
 ## Sort Methods in EXPLAIN
 
@@ -757,64 +768,19 @@ External merge = data exceeded work_mem
 
 ---
 
-[.footer: Slide 44 / 63]
+[.footer: Slide 43 / 56]
 
-## pg_stat_statements
-
----
-
-[.footer: Slide 45 / 63]
-
-## Finding Slow Queries
-
-pg\_stat\_statements collects cumulative query statistics
-
-```sql
--- Add to shared_preload_libraries
-ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
-```
-
-```bash
-## Restart container to load the extension
-docker compose down
-docker compose --profile dba up -d
-```
-
-```sql
--- Then create the extension
-CREATE EXTENSION pg_stat_statements;
-```
+## Indexes
 
 ---
 
-[.footer: Slide 46 / 63]
-
-## Top Queries by Total Time
-
-```sql
-SELECT 
-    LEFT(query, 60) as query,
-    calls,
-    ROUND(total_exec_time::numeric, 2) as total_ms,
-    ROUND(mean_exec_time::numeric, 2) as avg_ms,
-    ROUND((100 * total_exec_time / 
-        SUM(total_exec_time) OVER ())::numeric, 2) as pct
-FROM pg_stat_statements
-ORDER BY total_exec_time DESC
-LIMIT 10;
-```
-
-^ Judgment call: this is a light touch of pg_stat_statements - just enough to answer "how would I even know what to run EXPLAIN on?" The fuller hour-6 treatment (generating activity, average time, I/O breakdown, resetting stats) and auto_explain are both cut here as more than this audience needs today.
-
----
-
-[.footer: Slide 47 / 63]
+[.footer: Slide 44 / 56]
 
 ![inline](../diagrams/postgres-index-types.png)
 
 ---
 
-[.footer: Slide 48 / 63]
+[.footer: Slide 45 / 56]
 
 ## B-Tree Index (Default)
 
@@ -830,7 +796,7 @@ SELECT title FROM bluebox.film WHERE vote_average > 8;
 
 ---
 
-[.footer: Slide 49 / 63]
+[.footer: Slide 46 / 56]
 
 ## B-Tree Index: After
 
@@ -841,52 +807,19 @@ CREATE INDEX idx_film_vote_avg ON bluebox.film(vote_average);
 -- AFTER: Check the plan with the index
 EXPLAIN ANALYZE 
 SELECT title FROM bluebox.film WHERE vote_average > 8;
--- Bitmap Index Scan on idx_film_vote_avg  (cost=0.29..8.42)
---   Index Cond: (vote_average > 8)
+-- Bitmap Heap Scan on film  (cost=5.13..308.25 rows=110)
+--   Recheck Cond: (vote_average > 8)
+--   ->  Bitmap Index Scan on idx_film_vote_avg  (cost=0.00..5.11 rows=110)
+--         Index Cond: (vote_average > 8)
 ```
 
-Cost dropped from ~942 to ~8!
+Total cost dropped from ~942 to ~308. Read the top node: the index lookup itself is ~5, fetching the ~100 matching table pages is the rest.
+
+^ Plan captured on a fresh Bluebox load (PG 18.6); exact costs vary a little with table size.
 
 ---
 
-[.footer: Slide 50 / 63]
-
-## GIN Index
-
-Generalized Inverted Index - for arrays, JSONB, full-text
-
-```sql
--- BEFORE: Full-text search without GIN index
-EXPLAIN ANALYZE 
-SELECT title FROM bluebox.film 
-WHERE to_tsvector('english', overview) @@ to_tsquery('hero');
--- Seq Scan on film  (cost=0.00..2341.00)
---   Filter: (to_tsvector(...) @@ to_tsquery('hero'))
-```
-
----
-
-[.footer: Slide 51 / 63]
-
-## GIN Index: After
-
-```sql
--- Create GIN index on the text vector
-CREATE INDEX idx_film_overview_gin ON bluebox.film 
-USING gin(to_tsvector('english', overview));
-
--- AFTER: Same query with GIN index
-EXPLAIN ANALYZE 
-SELECT title FROM bluebox.film 
-WHERE to_tsvector('english', overview) @@ to_tsquery('hero');
--- Bitmap Index Scan on idx_film_overview_gin  (cost=0.12..8.14)
-```
-
-Full-text search becomes instant!
-
----
-
-[.footer: Slide 52 / 63]
+[.footer: Slide 47 / 56]
 
 ## Index Type Summary
 
@@ -899,12 +832,13 @@ Full-text search becomes instant!
 | BRIN | Time-series, ordered data |
 
 ^ Judgment call: composite/covering/partial/expression index strategies and HypoPG (testing
-hypothetical indexes) from hour-6 are cut here - solid "part two" material once this audience is
-past the basics of what an index even is and how to read its effect in EXPLAIN.
+hypothetical indexes) from hour-6 are cut here - solid follow-up material once this audience is
+past the basics of what an index even is and how to read its effect in EXPLAIN. The GIN
+before/after pair and "Finding Missing Indexes" were also cut for time; both are in hour-6-query-tuning.md.
 
 ---
 
-[.footer: Slide 53 / 63]
+[.footer: Slide 48 / 56]
 
 ## When NOT to Index
 
@@ -917,31 +851,13 @@ Every index has maintenance cost!
 
 ---
 
-[.footer: Slide 54 / 63]
-
-## Finding Missing Indexes
-
-```sql
--- Tables with high sequential scan ratio
-SELECT 
-    schemaname, relname,
-    seq_scan, idx_scan,
-    ROUND(100.0 * seq_scan / NULLIF(seq_scan + idx_scan, 0), 2) as seq_pct
-FROM pg_stat_user_tables
-WHERE seq_scan + idx_scan > 1000
-ORDER BY seq_scan DESC
-LIMIT 10;
-```
-
----
-
-[.footer: Slide 55 / 63]
+[.footer: Slide 49 / 56]
 
 ## Common Performance Patterns
 
 ---
 
-[.footer: Slide 56 / 63]
+[.footer: Slide 50 / 56]
 
 ## Pattern: N+1 Queries
 
@@ -964,7 +880,7 @@ LEFT JOIN rental r ON c.customer_id = r.customer_id;
 
 ---
 
-[.footer: Slide 57 / 63]
+[.footer: Slide 51 / 56]
 
 ## Pattern: SELECT *
 
@@ -986,7 +902,7 @@ WHERE vote_average > 8;
 
 ---
 
-[.footer: Slide 58 / 63]
+[.footer: Slide 52 / 56]
 
 ## Pattern: OFFSET for Pagination
 
@@ -1011,7 +927,7 @@ LIMIT 20;
 
 ---
 
-[.footer: Slide 59 / 63]
+[.footer: Slide 53 / 56]
 
 ## Pattern: Functions on Indexed Columns
 
@@ -1034,50 +950,26 @@ WHERE payment_date >= '2024-01-15'
 
 ---
 
-[.footer: Slide 60 / 63]
-
-## Pattern: OR Conditions
-
-**Problem**: OR can prevent index use
-
-```sql
--- Might not use index efficiently
-SELECT * FROM bluebox.film 
-WHERE vote_average = 8 OR EXTRACT(year FROM release_date) = 2024;
-```
-
-**Solution**: Use UNION
-
-```sql
--- Each part can use its own index
-SELECT * FROM bluebox.film WHERE vote_average = 8
-UNION
-SELECT * FROM bluebox.film WHERE EXTRACT(year FROM release_date) = 2024;
-```
-
----
-
-[.footer: Slide 61 / 63]
+[.footer: Slide 54 / 56]
 
 ## Query Tuning Checklist
 
-1. ✅ Use EXPLAIN (ANALYZE, BUFFERS) to understand plans
-2. ✅ Check pg\_stat\_statements for slow queries
+1. ✅ Check pg\_stat\_statements for slow queries
+2. ✅ Use EXPLAIN (ANALYZE, BUFFERS) to understand plans
 3. ✅ Ensure appropriate indexes exist
 4. ✅ Look for sequential scans on large tables
 5. ✅ Watch for disk sorts (increase work_mem)
 6. ✅ Verify statistics are current (ANALYZE)
-7. ✅ Consider covering indexes for frequent queries
 
 ---
 
-[.footer: Slide 62 / 63]
+[.footer: Slide 55 / 56]
 
 ## Session 3 Summary
 
 - ✅ Diagnosing locks and blocking sessions
 - ✅ Finding and stopping runaway queries, timeouts as guardrails
-- ✅ Monitoring essentials and key metrics
+- ✅ Monitoring essentials, key metrics and pg_stat_statements
 - ✅ A few key memory settings: shared_buffers, work_mem
 - ✅ Reading query plans with EXPLAIN
 - ✅ Index basics and when (not) to add one
@@ -1087,7 +979,7 @@ This is a diagnostic checklist and a first pass at reading query plans - not dee
 
 ---
 
-[.footer: Slide 63 / 63]
+[.footer: Slide 56 / 56]
 
 ## Questions?
 

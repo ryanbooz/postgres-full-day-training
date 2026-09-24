@@ -31,37 +31,73 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ## Session 2 Topics
 
-[.column]
-
-- Backups: dump/restore, basebackup
-- WAL and point-in-time recovery
+- WAL: how Postgres stays durable
+- Backups: dump/restore, basebackup, point-in-time recovery
 - Upgrades: minor and major versions
 - Replication: streaming & logical (concepts)
 - Connection pooling
 - Disk, storage, and vacuum
 - Extensions
 
-[.column]
-
-### github.com/elizabeth-christensen/postgres-full-day-training
-
-Sample database:
-
-### github.com/ryanbooz/bluebox
-
-[.column]
-
-postgres.app for macs will create a psql connection
-
 ---
 
 [.footer: Slide 3 / 56]
+
+## Understanding WAL
+
+## Write-Ahead Logging
+
+---
+
+[.footer: Slide 4 / 56]
+
+## What is WAL?
+
+**Write-Ahead Logging** - PostgreSQL's durability mechanism
+
+1. Before data is written to tables, changes are logged to WAL
+2. WAL is sequentially written (fast!)
+3. On crash, WAL is "replayed" to recover data
+4. WAL is also used for replicas, HA scenarios, and robust PITR backup systems
+
+---
+
+[.footer: Slide 5 / 56]
+
+![fit](../diagrams/WAL-diagram.png)
+
+---
+
+[.footer: Slide 6 / 56]
+
+## 🔧 Demo: View WAL
+
+```sql
+-- Current WAL position (Log Sequence Number)
+SELECT pg_current_wal_lsn();
+--  0/3A8B9D0
+
+-- WAL stats
+SELECT wal_records, wal_bytes, 
+       pg_size_pretty(wal_bytes) as wal_size
+FROM pg_stat_wal;
+```
+
+```bash
+## List WAL files in the container
+docker exec postgres-training ls -la \
+  /var/lib/postgresql/18/docker/pg_wal/
+```
+
+---
+
+[.footer: Slide 7 / 56]
 
 ## Backups
 
 ---
 
-[.footer: Slide 4 / 56]
+[.footer: Slide 8 / 56]
 
 ## Backup Strategy Fundamentals
 
@@ -72,17 +108,17 @@ postgres.app for macs will create a psql connection
 
 ---
 
-[.footer: Slide 5 / 56]
+[.footer: Slide 9 / 56]
 
 ## Backup Choices
 
 - Dump/restore - simple, but not automated, long restore times
 - Basebackup with added backups - more robust but self managed
-- Automated WAL tools - pg_backrest, WAL-E/G - robust, reliable, added complexity
+- Automated backup tools (see the end of this section) - robust, reliable, added complexity
 
 ---
 
-[.footer: Slide 6 / 56]
+[.footer: Slide 10 / 56]
 
 ## pg_dump - a copy, not a real backup
 
@@ -102,7 +138,7 @@ pg_dump -t 'bluebox.film' -t 'bluebox.rental' \
 
 ---
 
-[.footer: Slide 7 / 56]
+[.footer: Slide 11 / 56]
 
 ## pg_dump Options
 
@@ -117,7 +153,7 @@ pg_dump -t 'bluebox.film' -t 'bluebox.rental' \
 
 ---
 
-[.footer: Slide 8 / 56]
+[.footer: Slide 12 / 56]
 
 ## pg_dumpall - All Databases
 
@@ -131,7 +167,7 @@ pg_dumpall --globals-only -d postgresql://postgres:training@localhost:5432/postg
 
 ---
 
-[.footer: Slide 9 / 56]
+[.footer: Slide 13 / 56]
 
 ## pg_restore - Restoring Backups
 
@@ -148,7 +184,7 @@ pg_restore -t film -h localhost -U postgres -d bluebox_new bluebox.dump
 
 ---
 
-[.footer: Slide 10 / 56]
+[.footer: Slide 14 / 56]
 
 ## pg_basebackup - Physical Backup
 
@@ -162,13 +198,7 @@ Unlike pg_dump (logical), pg_basebackup:
 
 ---
 
-[.footer: Slide 11 / 56]
-
-![fit](../diagrams/point-in-time-recovery.png)
-
----
-
-[.footer: Slide 12 / 56]
+[.footer: Slide 15 / 56]
 
 ## 🔧 Demo: pg_basebackup
 
@@ -192,7 +222,7 @@ Note: This backup is inside the container. In production, you'd mount an externa
 
 ---
 
-[.footer: Slide 13 / 56]
+[.footer: Slide 16 / 56]
 
 ## pg_basebackup Options
 
@@ -208,7 +238,7 @@ Note: This backup is inside the container. In production, you'd mount an externa
 
 ---
 
-[.footer: Slide 14 / 56]
+[.footer: Slide 17 / 56]
 
 ## Inspect the Backup
 
@@ -225,7 +255,7 @@ docker exec postgres-training ls -la /backup/full/
 
 ---
 
-[.footer: Slide 15 / 56]
+[.footer: Slide 18 / 56]
 
 ## Verify the Backup Manifest
 
@@ -243,61 +273,16 @@ docker exec postgres-training head -50 /backup/full/backup_manifest
     ...
 ```
 
-The manifest lists every file with checksums for verification.
+The manifest lists every file with checksums for verification, and `pg_verifybackup` checks the backup against it:
 
----
-
-[.footer: Slide 16 / 56]
-
-## Understanding WAL
-
-## Write-Ahead Logging
-
----
-
-[.footer: Slide 17 / 56]
-
-## What is WAL?
-
-**Write-Ahead Logging** - PostgreSQL's durability mechanism
-
-1. Before data is written to tables, changes are logged to WAL
-2. WAL is sequentially written (fast!)
-3. On crash, WAL is "replayed" to recover data
-4. WAL is also used for replicas, HA scenarios, and robust PITR backup systems
-
----
-
-[.footer: Slide 18 / 56]
-
-![fit](../diagrams/WAL-diagram.png)
+```bash
+docker exec postgres-training pg_verifybackup /backup/full
+## backup successfully verified
+```
 
 ---
 
 [.footer: Slide 19 / 56]
-
-## 🔧 Demo: View WAL
-
-```sql
--- Current WAL position (Log Sequence Number)
-SELECT pg_current_wal_lsn();
---  0/3A8B9D0
-
--- WAL stats
-SELECT wal_records, wal_bytes, 
-       pg_size_pretty(wal_bytes) as wal_size
-FROM pg_stat_wal;
-```
-
-```bash
-## List WAL files in the container
-docker exec postgres-training ls -la \
-  /var/lib/postgresql/18/docker/pg_wal/
-```
-
----
-
-[.footer: Slide 20 / 56]
 
 ## Why WAL Matters for Backups: Consistency
 
@@ -318,17 +303,24 @@ Base Backup (Monday) + WAL files = Any point in time
 
 ---
 
+[.footer: Slide 20 / 56]
+
+![fit](../diagrams/point-in-time-recovery.png)
+
+---
+
 [.footer: Slide 21 / 56]
 
 ## Backup Strategy Example
 
 **Small database (< 100 GB)**
-- Daily full backups with pg_dump
+- Daily pg_basebackup + continuous WAL archiving (or let a tool like pgBackRest do both)
+- Optional nightly pg_dump as a logical copy for single-table restores
 - Keep 7 days of backups
 
 **Large database (> 100 GB)**
 - Weekly full pg_basebackup
-- Daily incremental backups (v18+)
+- Daily incremental backups (v17+)
 - Continuous WAL archiving for PITR
 - Keep 4 weeks + monthly archives
 
@@ -341,9 +333,8 @@ Base Backup (Monday) + WAL files = Any point in time
 1. **pg_basebackup** - Takes full cluster copy
 2. **backup_manifest** - Tracks files and checksums
 3. **WAL archiving** - Enables point-in-time recovery
-4. **Incremental (v18+)** - Only changed blocks
-5. **pg_combinebackup** - Merges incremental chain
-6. **pg_verifybackup** - Validates backup integrity
+4. **Incremental (v17+)** - Only changed blocks; `pg_combinebackup` merges the chain at restore time
+5. **pg_verifybackup** - Validates backup integrity
 
 ---
 
@@ -379,7 +370,9 @@ Base Backup (Monday) + WAL files = Any point in time
 | 17 | Sept 2024 | Nov 2029 |
 | 16 | Sept 2023 | Nov 2028 |
 | 15 | Oct 2022 | Nov 2027 |
-| 14 | Sept 2021 | Nov 2026 |
+| 14 | Sept 2021 | Nov 12, 2026 |
+
+PG 14 goes end-of-life six weeks after this conference. PG 19 is in beta now.
 
 ---
 
@@ -483,10 +476,10 @@ systemctl start postgresql@18-main
 
 ## Key Terms
 
-- **RPO** - Recovery Point Objective (data loss tolerance)
-- **RTO** - Recovery Time Objective (downtime tolerance)
 - **HA** - High Availability (minimize downtime)
 - **DR** - Disaster Recovery (survive catastrophe)
+
+RPO and RTO from the backup section apply here too: failover shrinks RTO, synchronous replication shrinks RPO.
 
 ---
 
@@ -510,7 +503,7 @@ Primary ──WAL Stream──> Standby (Hot Standby)
 
 ## Setting Up Streaming Replication
 
-Primary `postgresql.conf`:
+Primary `postgresql.conf` (plus a `REPLICATION` role and a `pg_hba.conf` entry for it):
 
 ```
 wal_level = replica
@@ -518,12 +511,13 @@ max_wal_senders = 3
 wal_keep_size = 1GB
 ```
 
-Standby `postgresql.conf`:
+Create the standby from a base backup of the primary:
 
+```bash
+pg_basebackup -h primary -U replicator -D /var/lib/postgresql/18/main -R -Xs -P
 ```
-primary_conninfo = 'host=primary user=replication'
-hot_standby = on  # allows queries on the standby
-```
+
+`-R` writes `primary_conninfo` and `standby.signal` for you. Start the standby and it streams WAL from the primary; `hot_standby = on` (the default) allows read queries on it.
 
 ---
 
@@ -651,7 +645,7 @@ App (1000 connections) → PgBouncer → PostgreSQL (20 connections)
 
 - Lightweight (single process, low memory)
 - Reuses database connections across clients
-- Your Docker Compose already has it running!
+- Our Docker Compose includes it: `docker compose --profile dba up -d` starts it on port 6432
 
 ^ By design, no live demo here - per updated guidance, connection pooling stays a conversation
 (why you need it, what PgBouncer does) rather than a walkthrough of the pool-mode table or admin
@@ -740,7 +734,7 @@ LIMIT 10;
 ## Table and Index Bloat
 
 ```sql
--- pg_bloat_check or pgstattuple extension
+-- pgstattuple is a contrib extension (more on extensions at the end of this session)
 CREATE EXTENSION pgstattuple;
 
 SELECT * FROM pgstattuple('bluebox.rental');
@@ -828,16 +822,14 @@ Bundled with Postgres - just `CREATE EXTENSION name;`
 - **pg_cron** - Job scheduling
 - **HypoPG** - Hypothetical indexes
 
-^ HypoPG comes back up in Session 3 for testing index ideas without actually creating them.
-
 ---
 
 [.footer: Slide 55 / 56]
 
 ## Session 2 Summary
 
-- ✅ Backup strategies: pg_dump, basebackup, tools
 - ✅ WAL: durability, archiving, PITR
+- ✅ Backup strategies: pg_dump, basebackup, tools
 - ✅ Minor and major version upgrades
 - ✅ HA/DR concepts: streaming replication, failover
 - ✅ Logical replication: what it is and when to use it
@@ -854,4 +846,4 @@ Bundled with Postgres - just `CREATE EXTENSION name;`
 <br>
 <br>
 
-## Next: When Postgres Misbehaves — Locks, Monitoring & the Config That Matters
+## Next: When Postgres Misbehaves — Locks, Monitoring, Key Config & Reading Query Plans
