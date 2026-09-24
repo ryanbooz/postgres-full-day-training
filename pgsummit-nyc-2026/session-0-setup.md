@@ -15,7 +15,7 @@ footer-style: #7E93B0, Helvetica Neue, text-scale(0.5)
 quote: #F4EFE6, Helvetica Neue Italic
 quote-author: #7FB3E0, Helvetica Neue
 
-[.footer: Slide 1 / 14]
+[.footer: Slide 1 / 15]
 
 ## Get Set Up: PostgreSQL + Bluebox
 ### Docker, psql, and the Sample Database
@@ -31,11 +31,9 @@ pgsummit-nyc-2026/README.md.
 
 ---
 
-[.footer: Slide 2 / 14]
+[.footer: Slide 2 / 15]
 
 ## Training Materials
-
-[.column]
 
 All slides, exercises, and Docker setup:
 
@@ -45,14 +43,11 @@ Sample database:
 
 ### github.com/ryanbooz/bluebox
 
-
-[.column]
-
-postgres.app for macs will create a psql connection
+**Tip:** on a Mac, Postgres.app includes a working psql client — no separate install needed.
 
 ---
 
-[.footer: Slide 3 / 14]
+[.footer: Slide 3 / 15]
 
 ## Let's Get Connected!
 
@@ -69,7 +64,7 @@ postgres.app for macs will create a psql connection
 
 ---
 
-[.footer: Slide 4 / 14]
+[.footer: Slide 4 / 15]
 
 ## Prerequisites
 
@@ -87,7 +82,7 @@ docker compose version
 
 ---
 
-[.footer: Slide 5 / 14]
+[.footer: Slide 5 / 15]
 
 ## Step 1: Clone the Repository
 
@@ -103,7 +98,7 @@ Or download as ZIP from GitHub if you don't have git.
 
 ---
 
-[.footer: Slide 6 / 14]
+[.footer: Slide 6 / 15]
 
 ## Step 2: Start PostgreSQL
 
@@ -124,7 +119,7 @@ abc123...      postgis/postgis:18-3.6   Up 10 seconds  0.0.0.0:5432->5432/tcp
 
 ---
 
-[.footer: Slide 7 / 14]
+[.footer: Slide 7 / 15]
 
 ## Step 3: Install a psql Client
 
@@ -132,22 +127,22 @@ You need a way to connect to PostgreSQL. Choose one:
 
 [.column]
 
-Mac
+### Mac
 - `brew install libpq` (client only)
 - `brew install postgresql@18`
 - Postgres.app (includes psql)
 
-Windows
+### Windows
 - PostgreSQL installer (postgresql.org)
 - pgAdmin (standalone)
 
 [.column]
 
-Linux
+### Linux
 - `apt install postgresql-client`
 - `yum install postgresql`
 
-Cross-Platform GUIs
+### Cross-Platform GUIs
 - pgAdmin
 - DBeaver
 - TablePlus
@@ -156,7 +151,7 @@ Cross-Platform GUIs
 
 ---
 
-[.footer: Slide 8 / 14]
+[.footer: Slide 8 / 15]
 
 ## Mac: Homebrew (Recommended)
 
@@ -176,7 +171,7 @@ Alternative: Install Postgres.app and use its bundled psql.
 
 ---
 
-[.footer: Slide 9 / 14]
+[.footer: Slide 9 / 15]
 
 ## Windows / GUI Users
 
@@ -193,7 +188,7 @@ pgAdmin includes a Query Tool that works like psql.
 
 ---
 
-[.footer: Slide 10 / 14]
+[.footer: Slide 10 / 15]
 
 ## Step 4: Connect to PostgreSQL
 
@@ -215,7 +210,7 @@ You're connected! 🎉
 
 ---
 
-[.footer: Slide 11 / 14]
+[.footer: Slide 11 / 15]
 
 ## Step 5: Create Database and Load Bluebox
 
@@ -240,9 +235,12 @@ psql postgresql://postgres:training@localhost:5432/bluebox -f bluebox_schema.sql
 psql postgresql://postgres:training@localhost:5432/bluebox -f bluebox_data.sql
 ```
 
+^ If you're using a GUI tool instead of psql and its query runner can't handle these files, skip
+ahead to the "Loading Data Without Local psql or a GUI Tool" troubleshooting slide near the end.
+
 ---
 
-[.footer: Slide 12 / 14]
+[.footer: Slide 12 / 15]
 
 ## Step 6: Verify Your Setup
 
@@ -268,7 +266,7 @@ If you see 7836 films, you're all set! ✅
 
 ---
 
-[.footer: Slide 13 / 14]
+[.footer: Slide 13 / 15]
 
 ## Troubleshooting: Last Resort
 
@@ -288,11 +286,41 @@ This works but isn't ideal for learning psql workflows.
 
 ---
 
-[.footer: Slide 14 / 14]
+[.footer: Slide 14 / 15]
+
+## Loading Data Without Local psql or a GUI Tool
+
+Bluebox's schema and data files are meant to be run with `psql -f` (they use `COPY`, not portable `INSERT`s) — most GUI query tools (pgAdmin, DBeaver, etc.) can't execute them directly. 
+
+If that happens, load the files using the psql that's already running inside the container.
+
+[.column]
+
+### 1. Copy the files into the container
+```bash
+docker cp bluebox_schema.sql postgres-training:/tmp/
+docker cp bluebox_data.sql postgres-training:/tmp/
+```
+
+[.column]
+
+### 2. Load them from inside the container
+```bash
+docker exec -it postgres-training \
+  psql -U postgres -d bluebox -f /tmp/bluebox_schema.sql
+
+docker exec -it postgres-training \
+  psql -U postgres -d bluebox -f /tmp/bluebox_data.sql
+```
+
+^ The container doesn't have the repo folder mounted, so it can't see files sitting on your host — `docker cp` is what gets them in. Same underlying fallback as the previous slide, just for the data-load step instead of connecting.
+
+---
+
+[.footer: Slide 15 / 15]
 
 ## You're Ready!
 
-Keep this environment around — it stays useful for all three workshop sessions, and afterward for
-you to keep exploring on your own.
+Keep this environment around — it stays useful for all three workshop sessions, and afterward for you to keep exploring on your own.
 
 **See you at the workshop!**

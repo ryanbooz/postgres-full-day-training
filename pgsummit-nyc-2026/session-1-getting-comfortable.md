@@ -430,24 +430,24 @@ SELECT * FROM film;  -- Same as bluebox.film
 
 [.column]
 
-Numeric
+### Numeric
 - `INTEGER` / `BIGINT`
 - `NUMERIC(p,s)`
 - `REAL` / `DOUBLE`
 
-Character
+### Character
 - `TEXT` (preferred)
 - `VARCHAR(n)`
 
 [.column]
 
-Date/Time
+### Date/Time
 - `DATE` / `TIME`
 - `TIMESTAMP`
 - `TIMESTAMPTZ` ⭐
 - `INTERVAL`
 
-Other
+### Other
 - `BOOLEAN`
 - `UUID`
 - `JSON` / `JSONB`

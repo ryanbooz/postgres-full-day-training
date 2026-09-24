@@ -15,7 +15,7 @@ footer-style: #7E93B0, Helvetica Neue, text-scale(0.5)
 quote: #F4EFE6, Helvetica Neue Italic
 quote-author: #7FB3E0, Helvetica Neue
 
-[.footer: Slide 1 / 56]
+[.footer: Slide 1 / 58]
 
 ## Postgres DBA Basics Nobody Told You
 <br>
@@ -27,7 +27,7 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ---
 
-[.footer: Slide 2 / 56]
+[.footer: Slide 2 / 58]
 
 ## Session 2 Topics
 
@@ -41,7 +41,7 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ---
 
-[.footer: Slide 3 / 56]
+[.footer: Slide 3 / 58]
 
 ## Understanding WAL
 
@@ -49,7 +49,7 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ---
 
-[.footer: Slide 4 / 56]
+[.footer: Slide 4 / 58]
 
 ## What is WAL?
 
@@ -62,13 +62,13 @@ quote-author: #7FB3E0, Helvetica Neue
 
 ---
 
-[.footer: Slide 5 / 56]
+[.footer: Slide 5 / 58]
 
 ![fit](../diagrams/WAL-diagram.png)
 
 ---
 
-[.footer: Slide 6 / 56]
+[.footer: Slide 6 / 58]
 
 ## 🔧 Demo: View WAL
 
@@ -91,13 +91,13 @@ docker exec postgres-training ls -la \
 
 ---
 
-[.footer: Slide 7 / 56]
+[.footer: Slide 7 / 58]
 
 ## Backups
 
 ---
 
-[.footer: Slide 8 / 56]
+[.footer: Slide 8 / 58]
 
 ## Backup Strategy Fundamentals
 
@@ -108,7 +108,7 @@ docker exec postgres-training ls -la \
 
 ---
 
-[.footer: Slide 9 / 56]
+[.footer: Slide 9 / 58]
 
 ## Backup Choices
 
@@ -118,7 +118,7 @@ docker exec postgres-training ls -la \
 
 ---
 
-[.footer: Slide 10 / 56]
+[.footer: Slide 10 / 58]
 
 ## pg_dump - a copy, not a real backup
 
@@ -138,7 +138,7 @@ pg_dump -t 'bluebox.film' -t 'bluebox.rental' \
 
 ---
 
-[.footer: Slide 11 / 56]
+[.footer: Slide 11 / 58]
 
 ## pg_dump Options
 
@@ -153,7 +153,7 @@ pg_dump -t 'bluebox.film' -t 'bluebox.rental' \
 
 ---
 
-[.footer: Slide 12 / 56]
+[.footer: Slide 12 / 58]
 
 ## pg_dumpall - All Databases
 
@@ -167,7 +167,7 @@ pg_dumpall --globals-only -d postgresql://postgres:training@localhost:5432/postg
 
 ---
 
-[.footer: Slide 13 / 56]
+[.footer: Slide 13 / 58]
 
 ## pg_restore - Restoring Backups
 
@@ -184,13 +184,13 @@ pg_restore -t film -h localhost -U postgres -d bluebox_new bluebox.dump
 
 ---
 
-[.footer: Slide 14 / 56]
+[.footer: Slide 14 / 58]
 
 ## pg_basebackup - Physical Backup
 
 Copies the entire database cluster at the file level.
 
-Unlike pg_dump (logical), pg_basebackup:
+Unlike `pg_dump` (logical), `pg_basebackup`:
 - Copies raw data files
 - Faster for large databases
 - Required for streaming replication setup
@@ -198,7 +198,7 @@ Unlike pg_dump (logical), pg_basebackup:
 
 ---
 
-[.footer: Slide 15 / 56]
+[.footer: Slide 15 / 58]
 
 ## 🔧 Demo: pg_basebackup
 
@@ -222,7 +222,7 @@ Note: This backup is inside the container. In production, you'd mount an externa
 
 ---
 
-[.footer: Slide 16 / 56]
+[.footer: Slide 16 / 58]
 
 ## pg_basebackup Options
 
@@ -238,7 +238,7 @@ Note: This backup is inside the container. In production, you'd mount an externa
 
 ---
 
-[.footer: Slide 17 / 56]
+[.footer: Slide 17 / 58]
 
 ## Inspect the Backup
 
@@ -255,7 +255,7 @@ docker exec postgres-training ls -la /backup/full/
 
 ---
 
-[.footer: Slide 18 / 56]
+[.footer: Slide 18 / 58]
 
 ## Verify the Backup Manifest
 
@@ -282,7 +282,7 @@ docker exec postgres-training pg_verifybackup /backup/full
 
 ---
 
-[.footer: Slide 19 / 56]
+[.footer: Slide 19 / 58]
 
 ## Why WAL Matters for Backups: Consistency
 
@@ -290,6 +290,12 @@ docker exec postgres-training pg_verifybackup /backup/full
 - without WAL, your copy will have files from before/after changes exist
 - no guarantees of consistency; database needs to recover to a known checkpoint
 - **a data directory copy without WAL generated during the dump IS NOT A BACKUP!**
+
+---
+
+[.footer: Slide 20 / 58]
+
+## Point-in-Time Recovery (PITR)
 
 WAL enables **Point-in-Time Recovery (PITR)**
 
@@ -303,19 +309,19 @@ Base Backup (Monday) + WAL files = Any point in time
 
 ---
 
-[.footer: Slide 20 / 56]
+[.footer: Slide 21 / 58]
 
 ![fit](../diagrams/point-in-time-recovery.png)
 
 ---
 
-[.footer: Slide 21 / 56]
+[.footer: Slide 22 / 58]
 
 ## Backup Strategy Example
 
 **Small database (< 100 GB)**
-- Daily pg_basebackup + continuous WAL archiving (or let a tool like pgBackRest do both)
-- Optional nightly pg_dump as a logical copy for single-table restores
+- Daily pg\_basebackup + continuous WAL archiving (or let a tool like pgBackRest do both)
+- Optional nightly pg\_dump as a logical copy for single-table restores
 - Keep 7 days of backups
 
 **Large database (> 100 GB)**
@@ -326,7 +332,7 @@ Base Backup (Monday) + WAL files = Any point in time
 
 ---
 
-[.footer: Slide 22 / 56]
+[.footer: Slide 23 / 58]
 
 ## Physical Backup Summary
 
@@ -338,7 +344,7 @@ Base Backup (Monday) + WAL files = Any point in time
 
 ---
 
-[.footer: Slide 23 / 56]
+[.footer: Slide 24 / 58]
 
 ## Other Backup Tools
 
@@ -348,35 +354,45 @@ Base Backup (Monday) + WAL files = Any point in time
 
 ---
 
-[.footer: Slide 24 / 56]
+[.footer: Slide 25 / 58]
 
 ## Upgrades and Versions
 
 ---
 
-[.footer: Slide 25 / 56]
+[.footer: Slide 26 / 58]
 
-![inline](../diagrams/postgres versions 19.png)
+## Postgres Today
+
+One major release a year, five years of support each — here's where that puts us:
+
+| PG 14 | PG 15 | PG 16 | PG 17 | PG 18 | PG 19 |
+|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+| 🔴 EOL in weeks | 🟢 Supported | 🟢 Supported | 🟢 Supported | 🟢 **Current stable** | 🔵 Public beta |
+
+Full dates on the next slide →
 
 ---
 
-[.footer: Slide 26 / 56]
+[.footer: Slide 27 / 58]
 
 ## Current Support Status
 
 | Version | First Release | End of Life |
 |---------|--------------|-------------|
+| 19 | Public beta now | ~Nov 2031 |
 | 18 | Sept 2025 | Nov 2030 |
 | 17 | Sept 2024 | Nov 2029 |
 | 16 | Sept 2023 | Nov 2028 |
 | 15 | Oct 2022 | Nov 2027 |
 | 14 | Sept 2021 | Nov 12, 2026 |
 
-PG 14 goes end-of-life six weeks after this conference. PG 19 is in beta now.
+PG 14 goes end-of-life six weeks after this conference. PG 19 is in public beta (beta 4) now,
+with general availability expected this fall.
 
 ---
 
-[.footer: Slide 27 / 56]
+[.footer: Slide 28 / 58]
 
 ## Minor Version Upgrades
 
@@ -396,7 +412,7 @@ systemctl restart postgresql
 
 ---
 
-[.footer: Slide 28 / 56]
+[.footer: Slide 29 / 58]
 
 ## 🔧 Demo: Minor Upgrade with Docker
 
@@ -421,17 +437,17 @@ docker exec postgres-training psql -U postgres \
 
 ---
 
-[.footer: Slide 29 / 56]
+[.footer: Slide 30 / 58]
 
 ## Major Version Upgrades - Options
 
-1. **pg_dump/pg_restore** - Logical, works across versions
+1. **pg\_dump/pg\_restore** - Logical, works across versions
 2. **pg_upgrade** - In-place, faster for large databases
 3. **Logical replication** - Zero/minimal downtime
 
 ---
 
-[.footer: Slide 30 / 56]
+[.footer: Slide 31 / 58]
 
 ## pg_upgrade
 
@@ -452,7 +468,7 @@ systemctl start postgresql@18-main
 
 ---
 
-[.footer: Slide 31 / 56]
+[.footer: Slide 32 / 58]
 
 ## Pre-Upgrade Checklist
 
@@ -466,13 +482,13 @@ systemctl start postgresql@18-main
 
 ---
 
-[.footer: Slide 32 / 56]
+[.footer: Slide 33 / 58]
 
 ## DR & HA Concepts
 
 ---
 
-[.footer: Slide 33 / 56]
+[.footer: Slide 34 / 58]
 
 ## Key Terms
 
@@ -483,14 +499,14 @@ RPO and RTO from the backup section apply here too: failover shrinks RTO, synchr
 
 ---
 
-[.footer: Slide 34 / 56]
+[.footer: Slide 35 / 58]
 
 ## Streaming Replication
 
 Primary server streams WAL to standby
 
 ```
-Primary ──WAL Stream──> Standby (Hot Standby)
+Primary ── WAL Stream ──> Standby (Hot Standby)
 ```
 
 - **Synchronous**: Zero data loss, higher latency
@@ -499,7 +515,7 @@ Primary ──WAL Stream──> Standby (Hot Standby)
 
 ---
 
-[.footer: Slide 35 / 56]
+[.footer: Slide 36 / 58]
 
 ## Setting Up Streaming Replication
 
@@ -521,7 +537,7 @@ pg_basebackup -h primary -U replicator -D /var/lib/postgresql/18/main -R -Xs -P
 
 ---
 
-[.footer: Slide 36 / 56]
+[.footer: Slide 37 / 58]
 
 ## Failover Options
 
@@ -542,7 +558,7 @@ pg_basebackup -h primary -U replicator -D /var/lib/postgresql/18/main -R -Xs -P
 
 ---
 
-[.footer: Slide 37 / 56]
+[.footer: Slide 38 / 58]
 
 ## Patroni - HA Solution
 
@@ -565,13 +581,13 @@ Hands-on Patroni is out of scope, but try the official demo:
 
 ---
 
-[.footer: Slide 38 / 56]
+[.footer: Slide 39 / 58]
 
 ## Logical Replication
 
 ---
 
-[.footer: Slide 39 / 56]
+[.footer: Slide 40 / 58]
 
 ## What is Logical Replication?
 
@@ -584,7 +600,7 @@ Unlike streaming replication:
 
 ---
 
-[.footer: Slide 40 / 56]
+[.footer: Slide 41 / 58]
 
 ## Logical Replication Use Cases
 
@@ -603,13 +619,13 @@ hour-3-dba.md, slides 46-53.
 
 ---
 
-[.footer: Slide 41 / 56]
+[.footer: Slide 42 / 58]
 
 ## Connection Management
 
 ---
 
-[.footer: Slide 42 / 56]
+[.footer: Slide 43 / 58]
 
 ## The Connection Problem
 
@@ -620,7 +636,11 @@ Each Postgres connection = 1 process
 - Applications leave idle connections
 - max_connections has practical limits
 
-See idle connections: 
+---
+
+[.footer: Slide 44 / 58]
+
+## 🔧 Demo: Finding Idle Connections
 
 ```sql
 SELECT pid, usename, state, query_start, state_change
@@ -633,7 +653,7 @@ ORDER BY state_change;
 
 ---
 
-[.footer: Slide 43 / 56]
+[.footer: Slide 45 / 58]
 
 ## PgBouncer - Connection Pooler
 
@@ -653,13 +673,13 @@ console. Attendees can explore PgBouncer hands-on later using the always-availab
 
 ---
 
-[.footer: Slide 44 / 56]
+[.footer: Slide 46 / 58]
 
 ## Disk, Storage, and Vacuum
 
 ---
 
-[.footer: Slide 45 / 56]
+[.footer: Slide 47 / 58]
 
 ## MVCC - Multi-Version Concurrency Control
 
@@ -673,7 +693,7 @@ PostgreSQL keeps old row versions for:
 
 ---
 
-[.footer: Slide 46 / 56]
+[.footer: Slide 48 / 58]
 
 ## What is Vacuum?
 
@@ -692,7 +712,7 @@ VACUUM FULL bluebox.rental;
 
 ---
 
-[.footer: Slide 47 / 56]
+[.footer: Slide 49 / 58]
 
 ## Autovacuum
 
@@ -709,7 +729,7 @@ autovacuum_vacuum_scale_factor = 0.2
 
 ---
 
-[.footer: Slide 48 / 56]
+[.footer: Slide 50 / 58]
 
 ## Monitoring Table Bloat
 
@@ -729,7 +749,7 @@ LIMIT 10;
 
 ---
 
-[.footer: Slide 49 / 56]
+[.footer: Slide 51 / 58]
 
 ## Table and Index Bloat
 
@@ -747,7 +767,7 @@ Tools for bloat analysis:
 
 ---
 
-[.footer: Slide 50 / 56]
+[.footer: Slide 52 / 58]
 
 ## Disk Space Monitoring
 
@@ -772,13 +792,13 @@ ORDER BY pg_total_relation_size(relid) DESC LIMIT 5;
 
 ---
 
-[.footer: Slide 51 / 56]
+[.footer: Slide 53 / 58]
 
 ## Extensions
 
 ---
 
-[.footer: Slide 52 / 56]
+[.footer: Slide 54 / 58]
 
 ## What are Extensions?
 
@@ -791,7 +811,7 @@ Extensions add functionality to Postgres:
 
 ---
 
-[.footer: Slide 53 / 56]
+[.footer: Slide 55 / 58]
 
 ## Contrib Extensions
 
@@ -812,7 +832,7 @@ Bundled with Postgres - just `CREATE EXTENSION name;`
 
 ---
 
-[.footer: Slide 54 / 56]
+[.footer: Slide 56 / 58]
 
 ## Popular Third-Party Extensions
 
@@ -824,7 +844,7 @@ Bundled with Postgres - just `CREATE EXTENSION name;`
 
 ---
 
-[.footer: Slide 55 / 56]
+[.footer: Slide 57 / 58]
 
 ## Session 2 Summary
 
@@ -839,7 +859,7 @@ Bundled with Postgres - just `CREATE EXTENSION name;`
 
 ---
 
-[.footer: Slide 56 / 56]
+[.footer: Slide 58 / 58]
 
 ## Questions?
 

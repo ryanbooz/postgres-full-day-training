@@ -34,8 +34,8 @@ quote-author: #7FB3E0, Helvetica Neue
 
 - Locks & blocking, with a live demo
 - Finding and stopping bad queries, timeouts as guardrails
-- Monitoring essentials and pg_stat_statements
-- A few key config settings (shared_buffers, work_mem)
+- Monitoring essentials and `pg_stat_statements`
+- A few key config settings (`shared_buffers`, `work_mem`)
 - Reading query plans with EXPLAIN
 - Index basics and common performance patterns
 
@@ -122,7 +122,7 @@ WHERE cardinality(pg_blocking_pids(pid)) > 0;
 
 Look up pid 164 in `pg_stat_activity`: it's window 1, `idle in transaction`. That pid is what we cancel or terminate in a moment.
 
-^ One query instead of the three lock queries from hour-4 (raw pg_locks, the recursive "source of the lock" query, and the pg_locks self-join): pg_blocking_pids() does the pg_locks work for you and also catches row and transaction locks. Passing mention: if you want to see lock waits show up in the Postgres log automatically, `log_lock_waits` will do that - detailed logging configuration is out of scope for this session.
+^ One query instead of the three lock queries from hour-4 (raw `pg_locks`, the recursive "source of the lock" query, and the `pg_locks` self-join): `pg_blocking_pids()` does the `pg_locks` work for you and also catches row and transaction locks. Passing mention: if you want to see lock waits show up in the Postgres log automatically, `log_lock_waits` will do that - detailed logging configuration is out of scope for this session.
 
 ---
 
@@ -372,7 +372,7 @@ FROM pg_stat_activity;
 
 [.footer: Slide 21 / 56]
 
-## pg_stat_statements: Finding Slow Queries
+## `pg_stat_statements`: Finding Slow Queries
 
 Tracks every query shape: calls, total and average time. It needs `shared_preload_libraries` (our `docker-compose.yml` preloads it; on your own server, set it and restart).
 
@@ -393,7 +393,7 @@ LIMIT 10;
 
 The top of this list is what you EXPLAIN - right after a few memory settings.
 
-^ Judgment call: this is a light touch of pg_stat_statements - just enough to answer "how would I even know what to run EXPLAIN on?", so it now sits with monitoring, before EXPLAIN. Preloading it in docker-compose.yml means no container restart mid-talk. The fuller hour-6 treatment (generating activity, average time, I/O breakdown, resetting stats) and auto_explain are both cut here as more than this audience needs today.
+^ Judgment call: this is a light touch of `pg_stat_statements` - just enough to answer "how would I even know what to run EXPLAIN on?", so it now sits with monitoring, before EXPLAIN. Preloading it in docker-compose.yml means no container restart mid-talk. The fuller hour-6 treatment (generating activity, average time, I/O breakdown, resetting stats) and `auto_explain` are both cut here as more than this audience needs today.
 
 ---
 
@@ -403,7 +403,7 @@ The top of this list is what you EXPLAIN - right after a few memory settings.
 
 ![inline](../diagrams/shared buffers.png)
 
-^ Judgment call: trimmed hard from hour-5. Just the handful of settings someone new to operating Postgres should know exist (shared_buffers, work_mem, maintenance_work_mem) - no effective_cache_size, buffer-cache internals, checkpoints, I/O cost tuning, or parallel query. Reading query plans (next section, from hour-6) is now the bigger focus for this audience than deep memory tuning.
+^ Judgment call: trimmed hard from hour-5. Just the handful of settings someone new to operating Postgres should know exist (`shared_buffers`, `work_mem`, `maintenance_work_mem`) - no `effective_cache_size`, buffer-cache internals, checkpoints, I/O cost tuning, or parallel query. Reading query plans (next section, from hour-6) is now the bigger focus for this audience than deep memory tuning.
 
 ---
 
@@ -969,8 +969,8 @@ WHERE payment_date >= '2024-01-15'
 
 - ✅ Diagnosing locks and blocking sessions
 - ✅ Finding and stopping runaway queries, timeouts as guardrails
-- ✅ Monitoring essentials, key metrics and pg_stat_statements
-- ✅ A few key memory settings: shared_buffers, work_mem
+- ✅ Monitoring essentials, key metrics and `pg_stat_statements`
+- ✅ A few key memory settings: `shared_buffers`, `work_mem`
 - ✅ Reading query plans with EXPLAIN
 - ✅ Index basics and when (not) to add one
 - ✅ Common performance anti-patterns and fixes
