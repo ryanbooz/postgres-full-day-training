@@ -16,7 +16,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./logs:/var/log/postgresql
-    command: postgres -c wal_level=logical
+    # pg_stat_statements is preloaded so its demos need no restart. Command-line
+    # settings override ALTER SYSTEM, so change shared_preload_libraries here.
+    command: postgres -c wal_level=logical -c shared_preload_libraries=pg_stat_statements
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

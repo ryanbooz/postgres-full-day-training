@@ -60,11 +60,11 @@ not two).
 | # | File | Delivered how | Title | One-line description | Slide count |
 |---|------|----------------|-------|----------------------|--------------|
 | 0 | [session-0-setup.md](session-0-setup.md) | Sent ahead of time / pointed to on-site — **not a live session** | Get Set Up: PostgreSQL + Bluebox | Docker, psql client install, and loading Bluebox — the installation steps from Hour 1, so no setup time is needed during the three live sessions | 14 |
-| 1 | [session-1-getting-comfortable.md](session-1-getting-comfortable.md) | Live, in-person | Getting Comfortable with Postgres — Tools, Users, Schemas, Objects, Arrays, JSONB & Window Functions | A tool tour, then users/roles/permissions, schemas, and data types/objects (with a live create-and-query demo), then arrays, JSONB, and window functions, with CTEs folded in as a technique | 50 |
-| 2 | [session-2-dba-basics.md](session-2-dba-basics.md) | Live, in-person | Postgres DBA Basics Nobody Told You | Backups, WAL/PITR, minor & major version upgrades, replication concepts (streaming & logical), connection pooling, VACUUM, and extensions | 56 |
-| 3 | [session-3-troubleshooting-tuning.md](session-3-troubleshooting-tuning.md) | Live, in-person | When Postgres Misbehaves — Locks, Monitoring & the Config That Matters | Locks/blocking, finding and stopping bad queries, monitoring essentials, a few key memory settings, and — the bulk of the session — reading query plans with EXPLAIN, index basics, and common performance patterns | 63 |
+| 1 | [session-1-getting-comfortable.md](session-1-getting-comfortable.md) | Live, in-person | Getting Comfortable with Postgres — Tools, Schemas, Users, Objects, Arrays, JSONB & Window Functions | A tool tour, then schemas, users/roles/permissions, and data types/constraints/objects (with a live create-and-query demo and a short JOIN primer), then arrays, JSONB, and window functions (running totals, LAG, RANK/PARTITION BY), with CTEs folded in as a technique | 52 |
+| 2 | [session-2-dba-basics.md](session-2-dba-basics.md) | Live, in-person | Postgres DBA Basics Nobody Told You | WAL, backups & PITR, minor & major version upgrades, replication concepts (streaming & logical), connection pooling, VACUUM, and extensions | 56 |
+| 3 | [session-3-troubleshooting-tuning.md](session-3-troubleshooting-tuning.md) | Live, in-person | When Postgres Misbehaves — Locks, Monitoring, Key Config & Reading Query Plans | Locks/blocking (with a live blocking demo), finding and stopping bad queries, monitoring essentials and pg_stat_statements, a few key memory settings, and — the bulk of the session — reading query plans with EXPLAIN, index basics, and common performance patterns | 56 |
 
-**Total: 183 slides** — 14 in the setup PDF, 169 across the three live sessions.
+**Total: 178 slides** — 14 in the setup PDF, 164 across the three live sessions.
 
 ## What changed in this pass (vs. the original brief)
 
@@ -101,18 +101,46 @@ is confirmed as talking/demo-led rather than hands-on:
   tuning checklist. This makes Session 3 the largest of the three (63 slides) — flagged below as
   something to watch on time.
 
+## Flow review pass
+
+A content-flow review of the second draft led to these changes (no source hour files touched):
+
+- **Session 0**: one repo URL (`ryanbooz/postgres-full-day-training`) everywhere; the Setup Overview now
+  lists the same six steps as the walkthrough, including the clone.
+- **Session 1**: Schemas now come before Users & Permissions (the GRANT slides use `ON SCHEMA`), with
+  `ALTER USER maria SET search_path` moved after maria is created and `\d bluebox.film` moved next to
+  the Bluebox schema slide. Added a Constraints slide before the demo table and a short JOIN slide before
+  the demo's join query (both from hour-2). LEAD is replaced by a RANK/PARTITION BY example, and the CTE
+  slide now wraps that window function (top 2 per rating) so it actually shows the two together. Fixed
+  `\x on` ("Always expanded"), the broken code fence in "Working with JSONB", and wrapped the array
+  UPDATE in BEGIN/ROLLBACK so the demo data stays unchanged.
+- **Session 2**: WAL is explained first; the PITR diagram now follows "Why WAL Matters". Incremental
+  backups are v17+, not v18+. The small-database strategy no longer recommends pg_dump as the backup
+  after calling it "not a real backup". Added `pg_verifybackup` to the manifest slide, `pg_basebackup -R`
+  to the streaming replication setup, and a note that PG 14 is EOL on Nov 12, 2026. Removed the duplicate
+  RPO/RTO definitions, WAL-E, the leftover topic-slide columns, the stale HypoPG note, and the claim that
+  PgBouncer is already running (it needs `--profile dba`).
+- **Session 3**: retitled to advertise EXPLAIN. Locks now go concept → live blocking demo → one
+  `pg_blocking_pids()` query → cancel/terminate → timeouts (the raw pg_locks query, the recursive
+  "source of the lock" query and the relation-only self-join are cut). pg_stat_statements moved next to
+  monitoring, before EXPLAIN, merged into one slide, and is preloaded in `docker-compose.yml` so there is
+  no restart mid-talk. maintenance_work_mem moved ahead of the work_mem → EXPLAIN bridge. Cut for time:
+  GIN before/after pair, "Finding Missing Indexes", and the OR-conditions pattern (its "good" version used
+  `EXTRACT()` on a column, the anti-pattern from the slide before). The B-tree "after" slide now quotes
+  the whole plan's cost, the health check's "oldest_transaction" is a time, and the checklist no longer
+  mentions covering indexes.
+- New and changed query outputs were captured against a fresh Bluebox load on PostgreSQL 18.6.
+
 ## Judgment calls worth a second look
 
-- **Session 3 length**: at 63 slides it's noticeably bigger than Sessions 1 (50) and 2 (56). Given
-  it's demo-led rather than hands-on, that may be fine, but it's the one most likely to run long.
-  If it needs trimming, the most cuttable material (each flagged with a `^` speaker note in-file)
-  is: the pg_stat_statements slide, the GIN index before/after pair (keeping just B-tree), and the
-  "Finding Missing Indexes" slide.
-- **Session 3's title** ("Locks, Monitoring & the Config That Matters") predates this expansion —
-  it still technically fits (EXPLAIN/indexes are arguably part of "the config that matters" in a
-  loose sense) but doesn't advertise the EXPLAIN/query-plan content that's now the largest chunk of
-  the session. Worth deciding whether to retitle (e.g., adding "& Reading Query Plans") or leave it,
-  since it's already the billed title.
+- **Session 3 length**: trimmed from 63 to 56 slides in the flow review, in line with Sessions 1
+  (52) and 2 (56). pg_stat_statements was kept (merged into one slide and moved before EXPLAIN,
+  since it answers "which query do I EXPLAIN?"); the GIN before/after pair, "Finding Missing Indexes",
+  the OR-conditions pattern and two of the three lock queries were cut. Still the session most likely
+  to run long; the next candidates to cut are the N+1 and SELECT * pattern slides.
+- **Session 3's title**: retitled from "Locks, Monitoring & the Config That Matters" to "Locks,
+  Monitoring, Key Config & Reading Query Plans" so it advertises the EXPLAIN/index content that is now
+  about half the deck. The conference listing still needs to be updated to match.
 - **Session 2's cut logical-replication demo**: the concept slides (what it is, use cases) stay, but
   the live publisher/subscriber walkthrough is gone. If a co-presenter wants it back for a
   particular audience, the full step-by-step is still intact in `hour-3-dba.md` (slides 46-53).
@@ -138,6 +166,5 @@ is confirmed as talking/demo-led rather than hands-on:
    pointing back to it. Still open: how/when Session 0 actually gets distributed (emailed ahead of
    time? linked from the conference schedule page? printed at registration?) — that's a logistics
    decision, not a content one.
-4. **New: Session 3's size and title** — see the judgment-calls section above. Worth a quick
-   go/no-go on trimming and on whether the session title should be updated to reflect the EXPLAIN/
-   index content now making up roughly half the deck.
+4. ~~Session 3's size and title~~ **Addressed** in the flow review (56 slides, retitled). Remaining
+   action item: update the title on the conference schedule.
