@@ -6,6 +6,11 @@ one day.
 
 Presented at SCaLE 23x (2026) - Southern California Linux Expo.
 
+> **Looking for the slides?** Use the PDFs in [`slides/`](slides/) — they're the finished,
+> presentation-ready artifact, rebuilt each time this material is updated for a new event. The
+> [`markdown/`](markdown/) folder is the editable Deckset source those PDFs are built from; it can
+> change between presentations and isn't meant to be read as the final deck.
+
 ## Topics Covered
 
 | Hour | Topics |
@@ -65,27 +70,27 @@ docker compose --profile dba up -d
 
 ### For Instructors
 
-1. Open the hour-*.md files in Deckset or similar
+1. Open the PDFs in `slides/` to present, or the `markdown/hour-*.md` files in Deckset if you want
+   to edit them
 2. Ensure Docker is running with the Bluebox database loaded
 3. Have a terminal ready for live demos
 
 ### For Self-Study
 
 1. Follow Get Set Up above
-2. Read through the slides in order
+2. Read through the PDFs in `slides/` in order
 3. Run the SQL examples as you go (every example is also pulled out into `sql/`)
 
 ## Repository Structure
 
 ```
-├── hour-1-beginner.md        # Slides: PostgreSQL fundamentals + setup
-├── hour-2-sql.md             # Slides: SQL in Postgres
-├── hour-3-dba.md             # Slides: DBA basics
-├── hour-4-troubleshooting.md # Slides: Troubleshooting
-├── hour-5-performance.md     # Slides: Performance tuning
-├── hour-6-query-tuning.md    # Slides: Query optimization
-├── slides/                   # PDF versions of the markdown
-├── sql/                      # SQL examples extracted from each hour-*.md
+├── slides/                   # PDFs - the finished decks, read these
+│   ├── hour-1-beginner.pdf
+│   └── ...
+├── markdown/                 # Deckset source the PDFs are built from - edit here, not slides/
+│   ├── hour-1-beginner.md
+│   └── ...
+├── sql/                      # SQL examples extracted from each markdown/hour-*.md
 ├── scripts/                  # extract-sql.py, fix-slides.sh
 └── add_slide_numbers.py      # Renumbers slide footers if slides are added/removed
 ```

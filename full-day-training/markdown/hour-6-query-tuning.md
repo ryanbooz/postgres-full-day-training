@@ -21,7 +21,6 @@ autoscale: true
 - Index types and strategies
 - Common performance patterns
 
-
 ---
 
 [.footer: Slide 3 / 63]
@@ -145,7 +144,7 @@ Seq Scan on film  (cost=0.00..941.95 rows=110 width=777)
 
 [.column]
 
-![inline](../diagrams/explain analyze.png)
+![inline](../../diagrams/explain analyze.png)
 
 [.column]
 
@@ -210,7 +209,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM film WHERE vote_average > 8;
 
 [.column]
 
-![inline](../diagrams/postgres-scan-types.png)
+![inline](../../diagrams/postgres-scan-types.png)
 
 ---
 
@@ -226,9 +225,7 @@ Reads every row in the table
 
 [.column]
 
-![inline](../diagrams/seq-scan.png)
-
-
+![inline](../../diagrams/seq-scan.png)
 
 ---
 
@@ -244,8 +241,7 @@ Uses index to find rows, then fetches from table
 
 [.column]
 
-![inline](../diagrams/index-scan.png)
-
+![inline](../../diagrams/index-scan.png)
 
 ---
 
@@ -261,8 +257,7 @@ All needed data is in the index - no table access!
 
 [.column]
 
-![inline](../diagrams/index-only-scan.png)
-
+![inline](../../diagrams/index-only-scan.png)
 
 ---
 
@@ -278,8 +273,7 @@ Two-phase: Build bitmap of matching rows, then fetch in physical order
 
 [.column]
 
-![inline](../diagrams/bitmap-index-scan.png)
-
+![inline](../../diagrams/bitmap-index-scan.png)
 
 ---
 
@@ -310,7 +304,7 @@ Best for small result sets with good indexes!
 
 ## Sort Operations
 
-![inline](../diagrams/postgres-sorts-explain.png)
+![inline](../../diagrams/postgres-sorts-explain.png)
 
 ---
 
@@ -563,7 +557,7 @@ For production, add to `shared_preload_libraries` and use `ALTER SYSTEM`.
 
 [.footer: Slide 33 / 63]
 
-![inline](../diagrams/postgres-index-types.png)
+![inline](../../diagrams/postgres-index-types.png)
 
 ---
 

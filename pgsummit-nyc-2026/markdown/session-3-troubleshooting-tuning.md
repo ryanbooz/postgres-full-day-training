@@ -61,7 +61,7 @@ quote-author: #7FB3E0, Helvetica Neue
 
 [.footer: Slide 5 / 56]
 
-![fit](../diagrams/lock-types.png)
+![fit](../../diagrams/lock-types.png)
 
 ---
 
@@ -401,7 +401,7 @@ The top of this list is what you EXPLAIN - right after a few memory settings.
 
 ## Memory Configuration
 
-![inline](../diagrams/shared buffers.png)
+![inline](../../diagrams/shared buffers.png)
 
 ^ Judgment call: trimmed hard from hour-5. Just the handful of settings someone new to operating Postgres should know exist (`shared_buffers`, `work_mem`, `maintenance_work_mem`) - no `effective_cache_size`, buffer-cache internals, checkpoints, I/O cost tuning, or parallel query. Reading query plans (next section, from hour-6) is now the bigger focus for this audience than deep memory tuning.
 
@@ -586,7 +586,7 @@ Seq Scan on film  (cost=0.00..941.95 rows=110 width=777)
 
 [.column]
 
-![inline](../diagrams/explain analyze.png)
+![inline](../../diagrams/explain analyze.png)
 
 [.column]
 
@@ -653,7 +653,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM bluebox.film WHERE vote_average > 8;
 
 [.column]
 
-![inline](../diagrams/postgres-scan-types.png)
+![inline](../../diagrams/postgres-scan-types.png)
 
 ---
 
@@ -669,7 +669,7 @@ Reads every row in the table
 
 [.column]
 
-![inline](../diagrams/seq-scan.png)
+![inline](../../diagrams/seq-scan.png)
 
 ---
 
@@ -685,7 +685,7 @@ Uses index to find rows, then fetches from table
 
 [.column]
 
-![inline](../diagrams/index-scan.png)
+![inline](../../diagrams/index-scan.png)
 
 ---
 
@@ -701,7 +701,7 @@ All needed data is in the index - no table access!
 
 [.column]
 
-![inline](../diagrams/index-only-scan.png)
+![inline](../../diagrams/index-only-scan.png)
 
 ---
 
@@ -717,7 +717,7 @@ Two-phase: Build bitmap of matching rows, then fetch in physical order
 
 [.column]
 
-![inline](../diagrams/bitmap-index-scan.png)
+![inline](../../diagrams/bitmap-index-scan.png)
 
 ---
 
@@ -776,7 +776,7 @@ External merge = data exceeded work_mem
 
 [.footer: Slide 44 / 56]
 
-![inline](../diagrams/postgres-index-types.png)
+![inline](../../diagrams/postgres-index-types.png)
 
 ---
 

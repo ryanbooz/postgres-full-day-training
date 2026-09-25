@@ -64,7 +64,7 @@ quote-author: #7FB3E0, Helvetica Neue
 
 [.footer: Slide 5 / 58]
 
-![fit](../diagrams/WAL-diagram.png)
+![fit](../../diagrams/WAL-diagram.png)
 
 ---
 
@@ -311,7 +311,7 @@ Base Backup (Monday) + WAL files = Any point in time
 
 [.footer: Slide 21 / 58]
 
-![fit](../diagrams/point-in-time-recovery.png)
+![fit](../../diagrams/point-in-time-recovery.png)
 
 ---
 

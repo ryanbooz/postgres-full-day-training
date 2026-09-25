@@ -4,7 +4,7 @@
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <markdown-file>"
-    echo "Example: $0 hour-1-beginner.md"
+    echo "Example: $0 markdown/hour-1-beginner.md"
     exit 1
 fi
 

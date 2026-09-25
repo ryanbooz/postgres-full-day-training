@@ -31,7 +31,6 @@ Sample database:
 
 ### github.com/ryanbooz/bluebox
 
-
 ---
 
 [.footer: Slide 3 / 52]
@@ -184,7 +183,7 @@ WHERE NOT l.granted;  -- Waiting locks
 
 [.footer: Slide 11 / 52]
 
-![fit](../diagrams/lock-types.png)
+![fit](../../diagrams/lock-types.png)
 
 ---
 
@@ -462,7 +461,7 @@ SELECT pg_reload_conf();
 
 [.column]
 
-![inline](../diagrams/log line prefix.png)
+![inline](../../diagrams/log line prefix.png)
 
 ---
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Extract SQL blocks from each session-*.md file into sql/session-*.sql files."""
+"""Extract SQL blocks from each markdown/session-*.md file into sql/session-*.sql files."""
 
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
+SOURCE_DIR = ROOT / "markdown"
 OUTPUT_DIR = ROOT / "sql"
 
 def extract_sql_from_session(md_path: Path) -> str:
@@ -52,7 +53,7 @@ def extract_sql_from_session(md_path: Path) -> str:
 
 def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
-    md_files = sorted(ROOT.glob("session-*.md"))
+    md_files = sorted(SOURCE_DIR.glob("session-*.md"))
 
     if not md_files:
         print("No session-*.md files found.", file=sys.stderr)

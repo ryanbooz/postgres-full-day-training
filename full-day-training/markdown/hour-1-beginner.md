@@ -1,6 +1,5 @@
 autoscale: true
 
-
 [.footer: Slide 1 / 65]
 
 ## PostgreSQL for the Absolute Beginner
@@ -10,7 +9,6 @@ autoscale: true
 ### SCaLE LA 2026
 
 ---
-
 
 [.footer: Slide 2 / 65]
 
@@ -22,7 +20,6 @@ autoscale: true
 - 3 experts to answer your questions
 
 ---
-
 
 [.footer: Slide 3 / 65]
 
@@ -38,7 +35,6 @@ autoscale: true
 | 6 | Query Tuning |
 
 ---
-
 
 [.footer: Slide 4 / 65]
 
@@ -59,10 +55,7 @@ Sample database:
 
 postgres.app for macs will create a psql connection
 
-
-
 ---
-
 
 [.footer: Slide 5 / 65]
 
@@ -78,7 +71,6 @@ postgres.app for macs will create a psql connection
 ~10-15 minutes
 
 ---
-
 
 [.footer: Slide 6 / 65]
 
@@ -97,7 +89,6 @@ docker compose version
 ```
 
 ---
-
 
 [.footer: Slide 7 / 65]
 
@@ -315,7 +306,7 @@ This works but isn't ideal for learning psql workflows.
 
 [.column]
 
-![inline](../diagrams/stack-overflow-survey-2025.png)
+![inline](../../diagrams/stack-overflow-survey-2025.png)
 
 ---
 
@@ -363,7 +354,7 @@ psql postgresql://postgres:training@localhost:5432/bluebox
 
 Connection to remote locations
 <br>
-![inline 70%](../diagrams/connection-strings.png)
+![inline 70%](../../diagrams/connection-strings.png)
 
 ---
 
@@ -755,7 +746,7 @@ Maria is a member of `data_analytics` - she inherits its permissions!
 
 ## Schemas
 
-![inline](../diagrams/instance-cluster-schema.png)
+![inline](../../diagrams/instance-cluster-schema.png)
 
 ---
 
@@ -1069,7 +1060,6 @@ VALUES
     (205026, 27205, 5, 'Mind-bending! Had to watch twice'),
     (205026, 693134, 5, 'Even better than the first Dune!');
 ```
-
 
 ---
 

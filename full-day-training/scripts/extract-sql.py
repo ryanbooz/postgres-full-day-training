@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Extract SQL blocks from each hour-*.md file into sql/hour-*.sql files."""
+"""Extract SQL blocks from each markdown/hour-*.md file into sql/hour-*.sql files."""
 
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
+SOURCE_DIR = ROOT / "markdown"
 OUTPUT_DIR = ROOT / "sql"
 
 def extract_sql_from_hour(md_path: Path) -> str:
@@ -52,7 +53,7 @@ def extract_sql_from_hour(md_path: Path) -> str:
 
 def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
-    md_files = sorted(ROOT.glob("hour-*.md"))
+    md_files = sorted(SOURCE_DIR.glob("hour-*.md"))
 
     if not md_files:
         print("No hour-*.md files found.", file=sys.stderr)

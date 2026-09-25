@@ -23,7 +23,6 @@ autoscale: true
 - Parallel query execution
 - Vacuum and autovacuum
 
-
 ---
 
 [.footer: Slide 3 / 52]
@@ -34,7 +33,7 @@ autoscale: true
 
 [.footer: Slide 4 / 52]
 
-![inline](../diagrams/pg data 1.png)
+![inline](../../diagrams/pg data 1.png)
 
 ---
 
@@ -42,7 +41,7 @@ autoscale: true
 
 #### Memory Architecture
 
-![inline](../diagrams/pg data 2.png)
+![inline](../../diagrams/pg data 2.png)
 
 ---
 
@@ -50,7 +49,7 @@ autoscale: true
 
 ## i/o
 
-![inline](../diagrams/pg data 3.png)
+![inline](../../diagrams/pg data 3.png)
 
 ---
 
@@ -74,7 +73,7 @@ autoscale: true
 
 ## Memory Configuration
 
-![inline](../diagrams/shared buffers.png)
+![inline](../../diagrams/shared buffers.png)
 
 ---
 
@@ -286,7 +285,7 @@ checkpoint_completion_target = 0.9
 
 [.column]
 
-![inline](../diagrams/data change.png)
+![inline](../../diagrams/data change.png)
 
 ---
 
@@ -586,7 +585,7 @@ Stay well under 2 billion.
 
 ## Read Scaling with Replicas
 
-![inline](../diagrams/read replicas.png)
+![inline](../../diagrams/read replicas.png)
 
 ---
 
@@ -594,7 +593,7 @@ Stay well under 2 billion.
 
 ## Connection Pooling
 
-![inline](../diagrams/connection pooling.png)
+![inline](../../diagrams/connection pooling.png)
 
 Reduces connection overhead dramatically
 

@@ -125,17 +125,18 @@ SELECT * FROM example;
 
 ## Adding New Slides
 
-Applies to the `full-day-training/` course; run these from inside that folder.
+Applies to the `full-day-training/` course; run these from inside that folder. Edit the files in
+`markdown/` — `slides/` holds the built PDFs and isn't edited directly.
 
-1. Add your content in the appropriate hour file
+1. Add your content in the appropriate `markdown/hour-*.md` file
 2. Run `python3 add_slide_numbers.py` to update all slide numbers
 3. Run the separator fix if needed:
 
 ```bash
 python3 -c "
 import re
-for f in ['hour-1-beginner.md', 'hour-2-sql.md', 'hour-3-dba.md', 
-          'hour-4-troubleshooting.md', 'hour-5-performance.md', 'hour-6-query-tuning.md']:
+for f in ['markdown/hour-1-beginner.md', 'markdown/hour-2-sql.md', 'markdown/hour-3-dba.md',
+          'markdown/hour-4-troubleshooting.md', 'markdown/hour-5-performance.md', 'markdown/hour-6-query-tuning.md']:
     with open(f, 'r') as file:
         content = file.read()
     content = re.sub(r'\n+---\n+', '\n\n---\n\n', content)
@@ -143,6 +144,9 @@ for f in ['hour-1-beginner.md', 'hour-2-sql.md', 'hour-3-dba.md',
         file.write(content)
 "
 ```
+
+4. Regenerate the SQL examples and PDF: `python3 scripts/extract-sql.py`, then re-export the deck
+   from Deckset into `slides/`.
 
 ## Pull Request Guidelines
 

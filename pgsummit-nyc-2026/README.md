@@ -12,13 +12,18 @@ the environment stays up afterward so you can keep exploring on your own.
 **Format:** talk + live demo. No laptop setup is required to attend — sit back and watch the demos.
 **Level:** assumes basic SQL comfort, not Postgres operations experience.
 
+> **Looking for the slides?** Use the PDFs in [`slides/`](slides/) — they're the finished,
+> presentation-ready decks, rebuilt for this conference. The [`markdown/`](markdown/) folder is the
+> editable Deckset source those PDFs are built from; it can still change before the sessions and
+> isn't meant to be read as the final deck.
+
 ## Get set up (optional, but recommended)
 
 You don't need anything installed to follow along in the room. But if you'd like to run the demo
 queries yourself — during the sessions, at breakfast beforehand, or any time after the
-conference — follow **[session-0-setup.md](session-0-setup.md)**. It walks through installing
-Docker, a psql client, and loading Bluebox (~10-15 minutes). We're also happy to help in person
-before the sessions start.
+conference — follow **[slides/session-0-setup.pdf](slides/session-0-setup.pdf)**. It walks through
+installing Docker, a psql client, and loading Bluebox (~10-15 minutes). We're also happy to help in
+person before the sessions start.
 
 ## Sessions
 
@@ -31,7 +36,7 @@ types, capped with a live demo: create a table, insert real rows, and query them
 We close with three of Postgres's best SQL superpowers — arrays, JSONB, and window functions — plus
 how CTEs make it all more readable.
 
-→ [session-1-getting-comfortable.md](session-1-getting-comfortable.md)
+→ [slides/session-1-getting-comfortable.pdf](slides/session-1-getting-comfortable.pdf)
 
 ### 2. Postgres DBA Basics Nobody Told You
 *Backups, WAL, Upgrades, Replication, Pooling & VACUUM*
@@ -42,7 +47,7 @@ minor and major version upgrades, replication concepts for both HA and selective
 why almost every production setup uses a connection pooler, VACUUM, and a tour of the extension
 ecosystem from contrib to PostGIS and pgvector.
 
-→ [session-2-dba-basics.md](session-2-dba-basics.md)
+→ [slides/session-2-dba-basics.pdf](slides/session-2-dba-basics.pdf)
 
 ### 3. When Postgres Misbehaves
 *Locks, Monitoring, Key Config & Reading Query Plans*
@@ -53,7 +58,7 @@ timeouts that act as guardrails, the handful of metrics worth watching, and real
 single most useful skill for understanding *why* a query is slow: reading `EXPLAIN` output. Closes
 with a checklist of common query anti-patterns and how to fix them.
 
-→ [session-3-troubleshooting-tuning.md](session-3-troubleshooting-tuning.md)
+→ [slides/session-3-troubleshooting-tuning.pdf](slides/session-3-troubleshooting-tuning.pdf)
 
 ## Resources
 

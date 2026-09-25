@@ -189,6 +189,16 @@ A content-flow review of the second draft led to these changes (no source hour f
   identifiers in backticks (or backslash-escaping inside `**bold**` runs, where nested backticks
   don't play well with Deckset's bold rendering — see slide 29 of session-2). **If new prose
   mentions a `snake_case` identifier outside a code block going forward, backtick it.**
+- **Repo-wide reorg: `.md` sources moved into `markdown/`**: both this folder and the parent repo's
+  `full-day-training/` moved their session/hour `.md` files into a `markdown/` subfolder, so a
+  visitor's first look at either course folder shows `README.md` and `slides/` (the finished PDFs),
+  not a wall of Deckset source. `session-*.md` files live at `pgsummit-nyc-2026/markdown/` now, one
+  level deeper than before, so their diagram references became `../../diagrams/...` (was
+  `../diagrams/...`). `scripts/extract-sql.py` was updated to read from `markdown/` while still
+  writing to the sibling `sql/`. The root README and this folder's README now link to `slides/*.pdf`
+  as the primary artifact, with a short callout explaining `markdown/` is editable source that can
+  drift from what's presented. **If you add a session file or rerun any tooling here, it lives in
+  and reads from `markdown/`, not the folder root.**
 
 ## Open questions (unresolved as of last edit)
 

@@ -160,7 +160,7 @@ on host "localhost" at port "5432".
 
 ## Schemas
 
-![inline](../diagrams/instance-cluster-schema.png)
+![inline](../../diagrams/instance-cluster-schema.png)
 
 ---
 
@@ -911,7 +911,7 @@ Key difference from GROUP BY: window functions keep all rows!
 
 [.footer: Slide 47 / 52]
 
-![fit](../diagrams/window-functions.png)
+![fit](../../diagrams/window-functions.png)
 
 ---
 
