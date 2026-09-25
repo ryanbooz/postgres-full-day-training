@@ -43,7 +43,8 @@ Edit the relevant `.md` files. See [Slide Format](#slide-format) below for guide
 
 - Verify SQL examples work against the Bluebox database
 - Check that slides render correctly in Deckset (if available)
-- Run the slide numbering script if you added/removed slides:
+- Run the slide numbering script if you added/removed slides (from the course folder you edited,
+  e.g. `full-day-training/`):
 
 ```bash
 python3 add_slide_numbers.py
@@ -123,6 +124,8 @@ SELECT * FROM example;
 - Prefer realistic examples over contrived ones
 
 ## Adding New Slides
+
+Applies to the `full-day-training/` course; run these from inside that folder.
 
 1. Add your content in the appropriate hour file
 2. Run `python3 add_slide_numbers.py` to update all slide numbers

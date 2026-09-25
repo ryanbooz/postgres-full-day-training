@@ -360,7 +360,7 @@ DO UPDATE SET
 
 [.footer: Slide 18 / 59]
 
-![fit](diagrams/join-types.png)
+![fit](../diagrams/join-types.png)
 
 ---
 
@@ -696,7 +696,7 @@ Key difference from GROUP BY: window functions keep all rows!
 
 [.footer: Slide 34 / 59]
 
-![fit](diagrams/window-functions.png)
+![fit](../diagrams/window-functions.png)
 
 ---
 
@@ -785,7 +785,7 @@ LIMIT 5;
 
 [.footer: Slide 39 / 59]
 
-![fit](diagrams/ctes.jpeg)
+![fit](../diagrams/ctes.jpeg)
 
 ---
 

@@ -21,7 +21,7 @@ shared_buffers = 8GB   -- For 32GB RAM system
 -- Set higher = planner prefers index scans
 -- Set lower = planner prefers sequential scans
 
-effective_cache_size = 24GB  -- For 32GB system
+effective_cache_size = 16GB  -- For 32GB system
 
 
 -- ----------------------------

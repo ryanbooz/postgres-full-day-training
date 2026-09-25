@@ -105,7 +105,7 @@ docker compose version
 
 ```bash
 ## Clone the training repo
-git clone https://github.com/Snowflake-Labs/postgres-full-day-training.git
+git clone https://github.com/ryanbooz/postgres-full-day-training.git
 
 ## Navigate into the folder
 cd postgres-full-day-training
@@ -315,7 +315,7 @@ This works but isn't ideal for learning psql workflows.
 
 [.column]
 
-![inline](diagrams/stack-overflow-survey-2025.png)
+![inline](../diagrams/stack-overflow-survey-2025.png)
 
 ---
 
@@ -363,7 +363,7 @@ psql postgresql://postgres:training@localhost:5432/bluebox
 
 Connection to remote locations
 <br>
-![inline 70%](diagrams/connection-strings.png)
+![inline 70%](../diagrams/connection-strings.png)
 
 ---
 
@@ -755,7 +755,7 @@ Maria is a member of `data_analytics` - she inherits its permissions!
 
 ## Schemas
 
-![inline](diagrams/instance-cluster-schema.png)
+![inline](../diagrams/instance-cluster-schema.png)
 
 ---
 

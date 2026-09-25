@@ -220,7 +220,7 @@ Unlike pg_dump (logical), pg_basebackup:
 [.footer: Slide 16 / 79]
 
 
-![fit](diagrams/point-in-time-recovery.png)
+![fit](../diagrams/point-in-time-recovery.png)
 
 ---
 
@@ -326,7 +326,7 @@ The manifest lists every file with checksums for verification.
 
 [.footer: Slide 23 / 79]
 
-![fit](diagrams/WAL-diagram.png)
+![fit](../diagrams/WAL-diagram.png)
 
 ---
 
@@ -421,7 +421,7 @@ Base Backup (Monday) + WAL files = Any point in time
 
 [.footer: Slide 30 / 79]
 
-![inline](diagrams/postgres versions 19.png)
+![inline](../diagrams/postgres versions 19.png)
 
 ---
 
